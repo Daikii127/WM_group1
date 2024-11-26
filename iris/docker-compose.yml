@@ -4,9 +4,9 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        user: “${USER:-user}”  # ホストマシンのユーザー名を使用
-        uid: “${UID:-1000}”    # ホストマシンのUID
-        gid: “${GID:-1000}”    # ホストマシンのGID
+        user: "${USER:-user}"  # ホストマシンのユーザー名を使用
+        uid: "${UID:-1000}"    # ホストマシンのUID
+        gid: "${GID:-1000}"    # ホストマシンのGID
     image: my-cuda-env:latest
     container_name: cuda-container
     runtime: nvidia
