@@ -1,3 +1,15 @@
+# dockerコンテナの起動方法
+## 1.bootstrapを実行
+
+```bash 
+bash bootstrap.sh
+```
+
+## 2. 起動したコンテナに入る
+```bash 
+docker compose exec $(whoami)_test bashでコンテナに入る
+```
+
 # Transformers are Sample-Efficient World Models (IRIS)
 
 [Transformers are Sample-Efficient World Models](https://openreview.net/forum?id=vhFu1Acb0xb) <br>
