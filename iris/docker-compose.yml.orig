@@ -1,0 +1,36 @@
+# コンテナ起動を楽にするための記述
+services:
+    $(whoami)_test:
+        # build時の設定
+        build:
+
+            # Dockerfileがあるディレクトリのパス
+            context: .
+
+            # Dockerfileに渡す環境変数。コマンドの返り値をshファイルで文字列に変換して使用する
+            args:
+              user: $(whoami)
+              uid: $(id -u)
+              gid: $(id -g)
+
+        # image名
+        image: $(whoami)/test
+
+        # コンテナ名
+        container_name: $(whoami)_test
+
+        # user@virgoなどのvirgoの部分。
+        hostname: docker
+
+        # jupyter用にポートを開ける。衝突を防ぐため自分のuidの下4桁を使用する。
+        #ports:
+            #- $(($(id -u)%%10000+50000)):$(($(id -u)%%10000+50000))
+
+        # マウント処理。:で分割し、左がホスト、右がdocker内
+        volumes:
+            - ".:/home/$(whoami)/workspace/"
+
+        # dockerコンテナを起動状態のままにしておくコマンド
+        tty: true
+
+

@@ -55,10 +55,10 @@ RUN echo "${user} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 WORKDIR /home/${user}
 
 # ホームディレクトリの権限をユーザに下げる
-RUN chown -R ${uid}:${gid} /home/${user}
+RUN chown -R ${user} /home/${user}
 
 # 作成したユーザーに切り替える
-USER ${user}
+USER ${uid}
 
 # pipする際に警告を出さないためにpathを通す
 ENV PATH=/home/${user}/.local/bin:$PATH
