@@ -235,6 +235,7 @@ def main(cfg):
             actions = {k: v.cpu().numpy() for k, v in actions.items()}
             actions = any_slice(actions, np.s_[0, 0])
             obs, _, done, info = env.step(actions)
+            print(done)
             elapsed_steps += 1
             if done:
                 break
