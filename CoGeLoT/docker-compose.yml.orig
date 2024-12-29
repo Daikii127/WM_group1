@@ -1,0 +1,52 @@
+# docker-composeのバージョン指定
+version: '2.3'
+
+# コンテナ起動を楽にするための記述
+services:
+    $(whoami)_cogelot:
+        # build時の設定
+        build:
+            # Dockerfileがあるディレクトリのパス
+            context: .
+
+            # Dockerfileに渡す環境変数。コマンドの返り値をshファイルで文字列に変換して使用する
+            args:
+              user: $(whoami)
+              uid: $(id -u)
+              gid: $(id -g)
+
+        # image名
+        image: $(whoami)/cogelot
+
+        # コンテナ名
+        container_name: $(whoami)_cogelot
+
+        hostname: docker
+
+        # jupyter用にポートを開ける。衝突を防ぐため自分のuidの下4桁を使用する。
+        #ports:
+            #- $(($(id -u)%%10000+50000)):$(($(id -u)%%10000+50000))
+
+        devices:
+            - "/dev/dri:/dev/dri"
+
+        environment:
+            - DISPLAY=${DISPLAY}
+            - NVIDIA_VISIBLE_DEVICES=all
+            - NVIDIA_DRIVER_CAPABILITIES=all
+            - HF_HOME=~/huggingface
+            - TORCH_HOME=~/workspace/torch
+            - HF_TOKEN=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
+            - WANDB_API_KEY=8cc0e7528ea4f787bdebd89491fb6ecff3184605
+
+
+        # マウント処理。:で分割し、左がホスト、右がdocker内
+        volumes:
+            - "~/Desktop/hf:/home/$(whoami)/huggingface"
+            - "~/workspace/WM_group1/CoGeLoT:/home/$(whoami)/workspace/"
+            - "/tmp/.X11-unix:/tmp/.X11-unix"
+
+        shm_size: '16g'
+
+        # dockerコンテナを起動状態のままにしておくコマンド
+        tty: true

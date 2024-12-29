@@ -1,0 +1,9 @@
+# @package _global_
+
+# DMOG (HWU cluster) with A40s with 48GB VRAM each
+defaults:
+  - dmog_1gpu.yaml
+
+trainer:
+  strategy: ddp
+  devices: 2

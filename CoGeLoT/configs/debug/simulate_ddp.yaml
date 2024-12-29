@@ -1,0 +1,9 @@
+# @package _global_
+
+defaults:
+  - default.yaml
+
+trainer:
+  accelerator: cpu
+  devices: 2
+  strategy: ddp_spawn

@@ -1,0 +1,5 @@
+extend = "../../pyproject.toml"
+fix-only = true
+# Just only check defaults
+lint.select = ["E", "F"]
+lint.ignore = ["F405", "F403", "E722", "F841", "E501"]

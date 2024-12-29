@@ -1,0 +1,267 @@
+[project]
+name = "cogelot"
+version = "1.0.5"
+description = ""
+authors = [
+    {name = "Amit Parekh", email = "7276308+amitkparekh@users.noreply.github.com"},
+]
+requires-python = ">=3.11,<=3.13"
+readme = "README.md"
+license = {text = "MIT"}
+dependencies = [
+    "torch>=2.4.0",
+    "tokenizers>=0.13.3",
+    "transformers>=4.32.0",
+    "omegaconf>=2.3.0",
+    "numpy>=1.25.2,<2",
+    "torchmetrics>=1.1.0",
+    "loguru>=0.7.0",
+    "tqdm>=4.66.1",
+    "rich>=13.5.2",
+    "pydantic>=2.3.0",
+    "orjson>=3.9.5",
+    "dill>=0.3.7",
+    "hydra-core>=1.3.2",
+    "typer>=0.9.0",
+    "datasets>=2.14.4",
+    "wandb>=0.15.8",
+    "pillow>=10.0.0",
+    "opencv-python-headless>=4.8.0.76",
+    "einops>=0.6.1",
+    "pandas>=2.0.3",
+    "pydantic-settings>=2.0.3",
+    "pytorch-lightning>=2.0.9",
+    "hf-transfer>=0.1.4",
+    "kornia>=0.7.0",
+    "dm-tree>=0.1.8",
+    "gym>=0.26.2",
+    "pybullet>=3.2.6",
+    "av>=10.0.0",
+    "imageio>=2.33.1",
+    "matplotlib>=3.7.2",
+    "psutil>=5.9.5",
+    "importlib-resources>=6.0.1",
+    "transforms3d>=0.4.1",
+    "pyarrow!=14",
+    "convert-case>=1.2.3",
+    "moviepy>=1.0.3",
+    "more-itertools>=10.2.0",
+    "polars>=0.20.6",
+    "huggingface-hub>=0.25.2",
+]
+
+[tool.pdm]
+plugins = ["sync-pre-commit-lock"]
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest<8",
+    "pytest-cov>=4.1.0",
+    "pytest-cases>=3.6.14",
+    "pytest-xdist>=3.3.1",
+    "hypothesis>=6.84.0",
+    "pytest-sugar>=1.0.0",
+    "pytest-mock>=3.12.0",
+]
+lint = [
+    "ruff>=0.0.285",
+    "pre-commit>=3.3.3",
+    "commitizen>=3.6.0",
+    "toml-sort>=0.23.1",
+    "docformatter>=1.7.5",
+    "pandas-stubs>=2.2.1.240316",
+    "types-tqdm>=4.66.0.20240106",
+    "basedpyright>=1.10.2",
+]
+notebooks = [
+    "ipykernel>=6.27.0",
+    "altair>=5.2.0",
+    "seaborn>=0.13.2",
+    "plotly>=5.20.0",
+]
+monitoring = ["nvitop>=1.3.2"]
+
+[tool.pdm.build]
+package-dir = "src"
+
+[tool.pdm.scripts]
+pre_install = "pdm install --plugins"
+format = "pre-commit run --all-files"
+pre_train = "pytest --deselect tests/test_online_evaluation.py -E cuda"
+
+[tool.basedpyright]
+exclude = [
+    "storage",
+    "configs",
+    "wandb",
+    "**/.*",
+    "**/*_cache*",
+    "**/python*/test/**",
+]
+ignore = [
+    "src/vima/**",
+    "src/vima_bench/**",
+    "src/vimasim/**",
+    "scripts/example.py",
+]
+typeCheckingMode = "all"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportFunctionMemberAccess = "warning"
+reportUnknownVariableType = false
+reportUntypedFunctionDecorator = false
+reportUnknownLambdaType = false
+reportUnknownArgumentType = false
+reportUnknownParameterType = false
+reportAny = false
+reportImplicitOverride = false
+reportMissingSuperCall = false
+reportUnusedCallResult = false
+reportIncompatibleMethodOverride = false
+reportInvalidCast = false
+reportPrivateLocalImportUsage = false
+reportUnsafeMultipleInheritance = false
+# Covered by ruff
+reportUnusedParameter = false
+reportPrivateUsage = false
+reportUnusedImport = false
+reportPrivateImportUsage = false
+reportImplicitStringConcatenation = false
+reportDeprecated = false
+reportMissingParameterType = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::UserWarning",
+    'ignore:Deprecated call to `pkg_resources.declare_namespace:DeprecationWarning',
+]
+
+[tool.ruff]
+line-length = 99
+target-version = "py311"
+unsafe-fixes = true
+src = ["src"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+# Enable every possible rule
+select = ["ALL"]
+ignore = [
+    # Allow function call as argument default
+    "B008",
+    # Don't ask for docstring at top of module --- put it in the functions/classes
+    "D100",
+    # Do not check for docstring within __init__ method
+    "D107",
+    # Don't ask about line length, Black recommends using bugbear B950 instead
+    "E501",
+    # Disable because this project uses jaxtyping (https://github.com/google/jaxtyping/blob/main/FAQ.md#flake8-is-throwing-an-error)
+    "F722",
+    # Allow import to be uppercase, because torch.nn.functional as F
+    "N812",
+    # Allow asserts to be used because they're just convenient for type-narrowing. Type-narrowing
+    # is more important than the possibility that someone is running python with -O (in optimized
+    # mode).
+    # https://stackoverflow.com/a/68429294
+    "S101",
+    # Do not enforce annotations for self, cls, or similar
+    "ANN1",
+    # Do not block using 'Any' type since it happens
+    "ANN401",
+    # Let Black handle commas
+    "COM",
+    # Let logging use f-strings
+    "G004",
+    # Disable 'flake8-errmsg' because we assume users of this project can read tracebacks
+    "EM",
+    # Allow TODO comments
+    "FIX002",
+    # We don't need to care about creating separate exception classes for every single type of
+    # error
+    "TRY003",
+    # Allow assigning variables before returning them
+    "RET504",
+    # Don't care about requiring an author name or issue link for a todo
+    "TD002",
+    "TD003",
+    # Disable flagging commented-out code because it's false-positives on shape comments
+    "ERA001",
+    # Things to ignore because ruff's formatter says so
+    # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    "D206",
+    "D300",
+    "E111",
+    "E114",
+    "E117",
+    "ISC001",
+    "ISC002",
+    "Q000",
+    "Q001",
+    "Q002",
+    "Q003",
+    "W191",
+]
+unfixable = [
+    # Do not remove unused variables
+    "F841",
+    # Do not auto-remove commented out code
+    "ERA001",
+]
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "double"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.flake8-type-checking]
+exempt-modules = ["typing", "typing_extensions", "pydantic_numpy"]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "pydantic.generics.GenericModel",
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["vima", "cogelot", "vima_bench"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 18
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "S101", "INP001", "PLR2004", "FBT001", "SLF001"]
+"scripts/*" = ["INP001"]
+"src/**/__init__.py" = ["D", "F401", "I002"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.pylint]
+max-args = 20
+
+[tool.sync-pre-commit-lock.dependency-mapping]
+toml-sort = {"repo" = "https://github.com/pappasam/toml-sort", "rev" = "v${rev}"}
+docformatter = {"repo" = "https://github.com/PyCQA/docformatter", "rev" = "v${rev}"}
+
+[tool.tomlsort]
+sort_first = ["project", "tool"]
+spaces_indent_inline_array = 4 # Matching editorconfig
+trailing_comma_inline_array = true
+overrides."project".first = [
+    "name",
+    "version",
+    "description",
+    "authors",
+    "license",
+    "readme",
+    "requires-python",
+]
+overrides."tool".first = ["pdm"]
+overrides."tool.pdm".first = ["dev-dependencies"]
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"

@@ -1,0 +1,14 @@
+# @package _global_
+
+defaults:
+  - _self_
+
+hydra:
+  job:
+    env_set:
+      OMP_NUM_THREADS: 1
+      HF_HUB_VERBOSITY: info
+
+trainer:
+  accelerator: gpu
+  devices: [0, 1]

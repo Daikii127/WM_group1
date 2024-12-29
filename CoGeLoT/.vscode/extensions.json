@@ -1,0 +1,12 @@
+{
+	"recommendations": [
+		"charliermarsh.ruff",
+		"ms-python.python",
+		"detachhead.basedpyright",
+		"njpwerner.autodocstring",
+		"editorconfig.editorconfig",
+		"tamasfe.even-better-toml",
+		"peterschmalfeldt.explorer-exclude",
+		"ms-python.debugpy"
+	]
+}

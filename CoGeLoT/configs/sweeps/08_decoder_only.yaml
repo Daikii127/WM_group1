@@ -1,0 +1,31 @@
+# Running command
+command:
+  - ${env}
+  - python
+  - ${program}
+  - hardware=eidf_4gpu
+  - ${args_no_hyphens}
+
+program: src/cogelot/entrypoints/train.py
+
+name: decoder only
+entity: daiki-takahashi-
+project: CoGeLoT
+
+method: grid
+
+parameters:
+  experiment:
+    values:
+      - 08_their_gpt
+      - 08_their_gpt_14tok
+
+  datamodule.dataset_variant:
+    values:
+      - original
+      - reworded
+
+  model.should_shuffle_obj_per_observations:
+    values:
+      - false
+      - true

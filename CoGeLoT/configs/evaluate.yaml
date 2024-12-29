@@ -1,0 +1,32 @@
+# @package _global_
+
+defaults:
+  - trainer: evaluation
+  - /instance_preprocessor.yaml@model
+  - environment@model.environment: headless
+  - evaluation_instance_transform: noop
+  - evaluation_prompt_modality: disable_none
+  - model@model.model: from_hf_repo
+  - datamodule: evaluation
+  - hydra: default
+  - hardware: default
+  - debug: null
+  - _self_
+
+task_name: "evaluate"
+output_dir: ${hydra:runtime.output_dir}
+training_data: original
+
+seed: 879008
+
+model:
+  _target_: cogelot.models.EvaluationLightningModule
+
+  # max_timesteps: int | oracle_max_steps | num_dragged_obj
+  max_timesteps: 10
+  should_stop_on_first_success: true
+  should_shuffle_obj_per_observations: false
+  difficulty: easy
+
+trainer:
+  devices: 20

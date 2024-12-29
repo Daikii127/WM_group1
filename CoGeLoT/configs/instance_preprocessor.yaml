@@ -1,0 +1,13 @@
+defaults:
+  - _self_
+
+instance_preprocessor:
+  _target_: cogelot.modules.instance_preprocessor.InstancePreprocessor
+
+  text_tokenizer:
+    _target_: cogelot.modules.tokenizers.TextTokenizer
+    pretrained_model: t5-base
+    model_max_length: 512
+
+  end_effector_tokenizer:
+    _target_: cogelot.modules.tokenizers.EndEffectorTokenizer

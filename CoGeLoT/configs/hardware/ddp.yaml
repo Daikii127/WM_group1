@@ -1,0 +1,13 @@
+# @package _global_
+defaults:
+  - gpu
+  - _self_
+
+trainer:
+  strategy:
+    _target_: pytorch_lightning.strategies.DDPStrategy
+    timeout:
+      _target_: datetime.timedelta
+      seconds: 3600
+    find_unused_parameters: True
+  sync_batchnorm: True

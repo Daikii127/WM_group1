@@ -1,0 +1,15 @@
+# @package _global_
+
+defaults:
+  - overfit_single
+  - override /trainer/logger: wandb_training
+  - override /trainer/callbacks:
+      - model_summary
+      - rich_progress
+      - early_stopping_train_acc
+      - lr_monitor
+      - model_checkpoint_at_end
+  - _self_
+
+trainer:
+  enable_checkpointing: true

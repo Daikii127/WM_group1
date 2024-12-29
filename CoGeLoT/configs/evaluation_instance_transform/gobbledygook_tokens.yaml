@@ -1,0 +1,7 @@
+# @package model.vima_instance_transform
+_target_: cogelot.data.transforms.GobbledyGookPromptTokenTransform
+timeout: 200
+text_tokenizer:
+  _target_: cogelot.modules.tokenizers.TextTokenizer
+  pretrained_model: t5-base
+  model_max_length: 512

@@ -1,0 +1,152 @@
+# Query: ENTITY
+# ContextLines: 1
+
+36 件の結果 - 25 ファイル
+
+configs/sweeps/03_experiment_1.yaml:
+  11  name: sweeping
+  12: entity: daiki-takahashi-
+  13  project: CoGeLoT
+
+configs/sweeps/04_their_vima_compare.yaml:
+  11  name: Their VIMA again
+  12: entity: daiki-takahashi-
+  13  project: CoGeLoT
+
+configs/sweeps/05_ablate_prompt_modality.yaml:
+  12  
+  13: entity: daiki-takahashi-
+  14  project: cogelot-evaluation
+
+configs/sweeps/06_ablate_given_model.yaml:
+  14  
+  15: entity: daiki-takahashi-
+  16  project: cogelot-evaluation
+
+configs/sweeps/07_ablate_shuffle_obs.yaml:
+  12  
+  13: entity: daiki-takahashi-
+  14  project: cogelot-evaluation
+
+configs/sweeps/08_decoder_only.yaml:
+  11  name: decoder only
+  12: entity: daiki-takahashi-
+  13  project: CoGeLoT
+
+configs/sweeps/09_paraphrase_trained.yaml:
+  11  name: sweeping
+  12: entity: daiki-takahashi-
+  13  project: CoGeLoT
+
+configs/sweeps/10_disable_text_train.yaml:
+  11  name: disable_text
+  12: entity: daiki-takahashi-
+  13  project: CoGeLoT
+
+configs/sweeps/11_disable_instruction_train.yaml:
+  11  name: disable_prompt
+  12: entity: pdaiki-takahashi-
+  13  project: CoGeLoT
+
+configs/trainer/logger/wandb_evaluation.yaml:
+  4    project: cogelot-evaluation
+  5:   entity: daiki-takahashi-
+  6    log_model: False
+
+configs/trainer/logger/wandb_training.yaml:
+  4    project: CoGeLoT
+  5:   entity: daiki-takahashi-
+  6    log_model: False
+
+huggingface/hub/models--t5-base/blobs/41911369be79611d82d152725113e66206bd7b79:
+  1: ⟪ 474539 characters skipped ⟫92291259766],["▁Shi",-10.955703735351562],["▁plays",-10.956303596496582],["▁sister",-10.95690631866455],["▁cable",-10.957179069519043],["▁desk",-10.957215309143066],["▁apoi",-10.957738876342773],["▁identity",-10.95785140991211],["▁stars",-10.957931518554688],["▁fata",-10.958008766174316],["▁obvious",-10.958330154418945],["▁dental",-10.95843505859375],["AM",-10.958802223205566],["▁sharp",-10.95881175994873],["duc",-10.959053993225098],["▁manufacturer",-10.95914077758789],["!)",-10.959270477294922],["▁objects",-10.959720611572266],["▁Ag",-10.959989547729492],["referred",-10.960195541381836],["▁Ak",-10.960308074951172],["burg",-10.960360527038574],["▁nouveau",-10.960854530334473],["▁Pal",-10.960994720458984],["▁Arbeits",-10.961280822753906],["▁personally",-10.961288452148438],["▁Dé",-10.961292266845703],["▁import",-10.961688041687012],["▁justice",-10.961913108825684],["▁photography",-10.962705612182617],["▁portfolio",-10.962841987609863],["56",-10.96314525604248],["▁nouvelle",-10.963293075561523],["▁oven",-10.964197158813477],["▁400",-10.964272499084473],["▁mixed",-10.964395523071289],["▁relax",-10.964427947998047],["▁imp",-10.964703559875488],["▁».",-10.964734077453613],["▁mail",-10.⟪ 171926 characters skipped ⟫2],["▁Say",-11.732879638671875],["▁internationale",-11.733064651489258],["cott",-11.733213424682617],["▁Whatever",-11.733261108398438],["▁admir",-11.733261108398438],["▁bucur",-11.733549118041992],["▁entity",-11.733779907226562],["▁dancing",-11.733837127685547],["▁printre",-11.733892440795898],["▁meditation",-11.734396934509277],["▁avis",-11.734416961669922],["▁1988",-11.73447036743164],["10.",-11.734506607055664],["▁worker",-11.734638214111328],["▁$100",-11.734784126281738],["▁contrôle",-11.7349853515625],["▁insist",-11.734997749328613],["ements",-11.73505973815918],["izate",-11.735163688659668],["▁tied",-11.735332489013672],["▁correspond",-11.735396385192871],["▁apartments",-11.735547065734863],["▁2009.",-11.735599517822266],["▁tiles",-11.735624313354492],["▁boots",-11.735639572143555],["▁laundry",-11.735673904418945],["▁Coffee",-11.735674858093262],["▁CV",-11.735727310180664],["▁composed",-11.736035346984863],["atom",-11.73622989654541],["▁shore",-11.736270904541016],["▁marijuana",-11.736312866210938],["plic",-11.73648452758789],["▁Zahl",-11.736649513244629],["depth",-11.73682689666748],["▁Egypt",-11.736854553222656],["▁NFL",-11.736906051635742],["▁12,",-11.736922264099121],["▁p⟪ 575934 characters skipped ⟫3.198966026306152],["▁Ethereum",-13.199069023132324],["▁Winnipeg",-13.199069023132324],["▁misconception",-13.199069023132324],["▁Verpackung",-13.199070930480957],["▁erzeugt",-13.199097633361816],["▁Identity",-13.199104309082031],["▁dunkle",-13.199109077453613],["sustaining",-13.19916820526123],["▁pereche",-13.199178695678711],["▁neîn",-13.199239730834961],["directorul",-13.199291229248047],["▁élabor",-13.199584007263184],["▁Hollow",-13.19960880279541],["▁getestet",-13.199751853942871],["▁Promote",-13.199797630310059],["agriculture",-13.199920654296875],["▁deosebir",-13.199934005737305],["▁neam",-13.199999809265137],["aufbau",-13.200042724609375],["▁susținut",-13.200079917907715],["fueled",-13.200119018554688],["▁impresionant",-13.200177192687988],["innate",-13.20026969909668],["grenzt",-13.200340270996094],["rescued",-13.200514793395996],["bestand",-13.200559616088867],["▁adjunct",-13.200729370117188],["▁Mischung",-13.200754165649414],["▁Lease",-13.201258659362793],["espagnol",-13.201284408569336],["▁Kickstarter",-13.201284408569336],["▁buzunar",-13.201284408569336],["▁buddies",-13.20129108428955],["käufe",-13.201485633850098],["cevoir",-13.201582908630371],["▁creşte",-13.201675415
+
+huggingface/hub/models--t5-base/snapshots/a9723ea7f1b39c1eae772870f3b547bf6ef7e6c1/tokenizer.json:
+  1: ⟪ 474539 characters skipped ⟫92291259766],["▁Shi",-10.955703735351562],["▁plays",-10.956303596496582],["▁sister",-10.95690631866455],["▁cable",-10.957179069519043],["▁desk",-10.957215309143066],["▁apoi",-10.957738876342773],["▁identity",-10.95785140991211],["▁stars",-10.957931518554688],["▁fata",-10.958008766174316],["▁obvious",-10.958330154418945],["▁dental",-10.95843505859375],["AM",-10.958802223205566],["▁sharp",-10.95881175994873],["duc",-10.959053993225098],["▁manufacturer",-10.95914077758789],["!)",-10.959270477294922],["▁objects",-10.959720611572266],["▁Ag",-10.959989547729492],["referred",-10.960195541381836],["▁Ak",-10.960308074951172],["burg",-10.960360527038574],["▁nouveau",-10.960854530334473],["▁Pal",-10.960994720458984],["▁Arbeits",-10.961280822753906],["▁personally",-10.961288452148438],["▁Dé",-10.961292266845703],["▁import",-10.961688041687012],["▁justice",-10.961913108825684],["▁photography",-10.962705612182617],["▁portfolio",-10.962841987609863],["56",-10.96314525604248],["▁nouvelle",-10.963293075561523],["▁oven",-10.964197158813477],["▁400",-10.964272499084473],["▁mixed",-10.964395523071289],["▁relax",-10.964427947998047],["▁imp",-10.964703559875488],["▁».",-10.964734077453613],["▁mail",-10.⟪ 171926 characters skipped ⟫2],["▁Say",-11.732879638671875],["▁internationale",-11.733064651489258],["cott",-11.733213424682617],["▁Whatever",-11.733261108398438],["▁admir",-11.733261108398438],["▁bucur",-11.733549118041992],["▁entity",-11.733779907226562],["▁dancing",-11.733837127685547],["▁printre",-11.733892440795898],["▁meditation",-11.734396934509277],["▁avis",-11.734416961669922],["▁1988",-11.73447036743164],["10.",-11.734506607055664],["▁worker",-11.734638214111328],["▁$100",-11.734784126281738],["▁contrôle",-11.7349853515625],["▁insist",-11.734997749328613],["ements",-11.73505973815918],["izate",-11.735163688659668],["▁tied",-11.735332489013672],["▁correspond",-11.735396385192871],["▁apartments",-11.735547065734863],["▁2009.",-11.735599517822266],["▁tiles",-11.735624313354492],["▁boots",-11.735639572143555],["▁laundry",-11.735673904418945],["▁Coffee",-11.735674858093262],["▁CV",-11.735727310180664],["▁composed",-11.736035346984863],["atom",-11.73622989654541],["▁shore",-11.736270904541016],["▁marijuana",-11.736312866210938],["plic",-11.73648452758789],["▁Zahl",-11.736649513244629],["depth",-11.73682689666748],["▁Egypt",-11.736854553222656],["▁NFL",-11.736906051635742],["▁12,",-11.736922264099121],["▁p⟪ 575934 characters skipped ⟫3.198966026306152],["▁Ethereum",-13.199069023132324],["▁Winnipeg",-13.199069023132324],["▁misconception",-13.199069023132324],["▁Verpackung",-13.199070930480957],["▁erzeugt",-13.199097633361816],["▁Identity",-13.199104309082031],["▁dunkle",-13.199109077453613],["sustaining",-13.19916820526123],["▁pereche",-13.199178695678711],["▁neîn",-13.199239730834961],["directorul",-13.199291229248047],["▁élabor",-13.199584007263184],["▁Hollow",-13.19960880279541],["▁getestet",-13.199751853942871],["▁Promote",-13.199797630310059],["agriculture",-13.199920654296875],["▁deosebir",-13.199934005737305],["▁neam",-13.199999809265137],["aufbau",-13.200042724609375],["▁susținut",-13.200079917907715],["fueled",-13.200119018554688],["▁impresionant",-13.200177192687988],["innate",-13.20026969909668],["grenzt",-13.200340270996094],["rescued",-13.200514793395996],["bestand",-13.200559616088867],["▁adjunct",-13.200729370117188],["▁Mischung",-13.200754165649414],["▁Lease",-13.201258659362793],["espagnol",-13.201284408569336],["▁Kickstarter",-13.201284408569336],["▁buzunar",-13.201284408569336],["▁buddies",-13.20129108428955],["käufe",-13.201485633850098],["cevoir",-13.201582908630371],["▁creşte",-13.201675415
+
+scripts/add_their_results.py:
+  83  
+  84: wandb.init(project="vima", entity="daiki-takahashi-", name="VIMA Paper")
+  85  
+
+src/cogelot/app/evaluation_explore.py:
+   5  
+   6: WANDB_ENTITY = "daiki-takahashi-"
+   7  WANDB_PROJECT = "vima"
+
+  83      api = wandb.Api()
+  84:     runs = api.runs(f"{WANDB_ENTITY}/{WANDB_PROJECT}")
+  85      all_runs = []
+
+src/cogelot/common/wandb.py:
+  10  def download_model_from_wandb(
+  11:     entity: str, project: str, run_id: str, save_dir: Path, *, force_download: bool = False
+  12  ) -> Path:
+  13      """Downlaod the model from wandb into the output dir and return the path to it."""
+  14:     checkpoint_name = f"{entity}_{project}_{run_id}.ckpt"
+  15      checkpoint_path = save_dir.joinpath(checkpoint_name)
+
+  22      api = wandb.Api()
+  23:     run = api.run(f"{entity}/{project}/{run_id}")
+  24  
+
+src/cogelot/modules/action_encoders.py:
+  57          embedder_per_pose_action: Mapping[PoseActionType, vnn.ContinuousActionEmbedding],
+  58:         post_layer: torch.nn.Linear | torch.nn.Identity,
+  59      ) -> None:
+
+src/cogelot/modules/policy.py:
+  86          self._prompt_encoder_post_layer = (
+  87:             torch.nn.Identity()
+  88              if embed_dim == self._prompt_encoder.config.d_model
+
+src/vima/nn/utils.py:
+  12      if not activation:
+  13:         return nn.Identity
+  14      if callable(activation):
+
+  52      if not norm_type:
+  53:         return nn.Identity
+  54  
+
+src/vima/nn/action_embd/action_embd.py:
+  12          self._post_layer = (
+  13:             nn.Identity()
+  14              if output_dim == embed_dict_output_dim
+
+src/vima/policy/vima_flamingo_policy.py:
+   52          self.obs_fusion_layer = (
+   53:             nn.Identity() if obs_feat_dim == embed_dim else nn.Linear(obs_feat_dim, embed_dim)
+   54          )
+
+  102          self.t5_prompt_encoder_post_layer = (
+  103:             nn.Identity()
+  104              if embed_dim == self.t5_prompt_encoder.output_dim
+
+src/vima/policy/vima_gato_policy.py:
+  48          self.obs_fusion_layer = (
+  49:             nn.Identity() if obs_feat_dim == embed_dim else nn.Linear(obs_feat_dim, embed_dim)
+  50          )
+
+  98          self.t5_prompt_encoder_post_layer = (
+  99:             nn.Identity()
+  100              if embed_dim == self.t5_prompt_encoder.output_dim
+
+src/vima/policy/vima_gpt_policy.py:
+  47          self.obs_fusion_layer = (
+  48:             nn.Identity() if obs_feat_dim == embed_dim else nn.Linear(obs_feat_dim, embed_dim)
+  49          )
+
+  97          self.t5_prompt_encoder_post_layer = (
+  98:             nn.Identity()
+  99              if embed_dim == self.t5_prompt_encoder.output_dim
+
+src/vima/policy/vima_policy.py:
+  95          self.t5_prompt_encoder_post_layer = (
+  96:             nn.Identity()
+  97              if embed_dim == self.t5_prompt_encoder.output_dim
+
+wandb/settings:
+  2  api_key = 8cc0e7528ea4f787bdebd89491fb6ecff3184605
+  3: entity = daiki-takahashi-
+  4  project = vima
