@@ -1,0 +1,1147 @@
+# Query: prompt
+# ContextLines: 1
+
+576 件の結果 - 46 ファイル
+
+model-card.md:
+   5  ## Model Details
+   6: VIMA (**Vi**suo**M**otor **A**ttention) is a novel Transformer agent that ingests multimodal prompts and outputs robot arm control autoregressively. VIMA is developed primarily by researchers at Stanford/NVIDIA.
+   7  
+
+  11  ### Model Type
+  12: VIMA model consists of a pretrained T5 model as the prompt encoder, several tokenizers to process multimodal inputs, and a causal decoder that augoregressively predicts actions given the prompt and interaction history.
+  13  
+
+  19  ### Intended Use
+  20: The model is intended to be used alongside [VIMA-Bench](https://github.com/vimalabs/VimaBench) to study general robot manipulation with multimodal prompts.
+  21  
+
+  41  @inproceedings{jiang2023vima,
+  42:   title     = {VIMA: General Robot Manipulation with Multimodal Prompts},
+  43    author    = {Yunfan Jiang and Agrim Gupta and Zichen Zhang and Guanzhi Wang and Yongqiang Dou and Yanjun Chen and Li Fei-Fei and Anima Anandkumar and Yuke Zhu and Linxi Fan},
+
+README.md:
+   1: # VIMA: General Robot Manipulation with Multimodal Prompts
+   2  ## ICML 2023
+
+  20  
+  21: Prompt-based learning has emerged as a successful paradigm in natural language processing, where a single general-purpose language model can be instructed to perform any task specified by input prompts. However, different robotics tasks are still tackled by specialized models. This work shows that we can express a wide spectrum of robot manipulation tasks with *multimodal prompts*, interleaving textual and visual tokens.
+  22: We introduce VIMA (**Vi**suo**M**otor **A**ttention agent), a novel scalable multi-task robot learner with a uniform sequence IO interface achieved through multimodal prompts. The architecture follows the encoder-decoder transformer design proven to be effective and scalable in NLP. VIMA encodes an input sequence of interleaving textual and visual prompt tokens with a [pretrained](https://www.deepmind.com/publications/multimodal-few-shot-learning-with-frozen-language-models) [language model](https://ai.googleblog.com/2020/02/exploring-transfer-learning-with-t5.html), and decodes robot control actions autoregressively for each environment interaction step. The transformer decoder is conditioned on the prompt via cross-attention layers that alternate with the usual causal self-attention. Instead of operating on raw pixels, VIMA adopts an object-centric approach. We parse all images in the prompt or observation into objects by [off-the-shelf detectors](https://arxiv.org/abs/1703.06870), and flatten them into sequences of object tokens. All these design choices combined deliver a conceptually simple architecture with strong model and data scaling properties.
+  23  
+
+  39  # Baselines Implementation
+  40: Because there is no prior method that works out of the box with our multimodal prompting setup, we make our best effort to select a number of representative transformer-based agent architectures as baselines, and re-interpret them to be compatible with VIMA-Bench. They include ```VIMA-Gato```, ```VIMA-Flamingo```, and ```VIMA-GPT```. Their implementation can be found in the ```policy``` folder.
+  41  
+
+  54  
+  55: After running the above command, we should see a PyBullet GUI pop up, alongside a small window showing the multimodal prompt. Then a robot arm should move to complete the corresponding task. Note that this demo may not work on headless machines since the PyBullet GUI requires a display.
+  56  
+
+  62  @inproceedings{jiang2023vima,
+  63:   title     = {VIMA: General Robot Manipulation with Multimodal Prompts},
+  64    author    = {Yunfan Jiang and Agrim Gupta and Zichen Zhang and Guanzhi Wang and Yongqiang Dou and Yanjun Chen and Li Fei-Fei and Anima Anandkumar and Yuke Zhu and Linxi Fan},
+
+scripts/example.py:
+   91                  seed=seed,
+   92:                 render_prompt=True,
+   93                  display_debug_window=True,
+
+  106          meta_info = env.meta_info
+  107:         prompt = env.prompt
+  108:         prompt_assets = env.prompt_assets
+  109          elapsed_steps = 0
+
+  112              if elapsed_steps == 0:
+  113:                 prompt_token_type, word_batch, image_batch = prepare_prompt(
+  114:                     prompt=prompt, prompt_assets=prompt_assets, views=["front", "top"]
+  115                  )
+
+  117                  image_batch = image_batch.to_torch_tensor(device=cfg.device)
+  118:                 prompt_tokens, prompt_masks = policy.forward_prompt_assembly(
+  119:                     (prompt_token_type, word_batch, image_batch)
+  120                  )
+
+  186                  action_token=action_tokens_to_forward,
+  187:                 prompt_token=prompt_tokens,
+  188:                 prompt_token_mask=prompt_masks,
+  189                  obs_mask=obs_masks_to_forward,
+
+  243  
+  244: def prepare_prompt(*, prompt: str, prompt_assets: dict, views: list[str]):
+  245      views = sorted(views)
+  246:     encoding = tokenizer.encode(prompt, add_special_tokens=True)
+  247:     prompt_ids, prompt_tokens = encoding.ids, encoding.tokens
+  248:     assert set(prompt_assets.keys()) == set(
+  249:         [token[1:-1] for token in prompt_tokens if token in PLACEHOLDERS]
+  250      )
+  251:     filled_prompt = []
+  252:     for id, token in zip(prompt_ids, prompt_tokens):
+  253          if token not in PLACEHOLDERS:
+  254              assert "{" not in token and "}" not in token
+  255:             filled_prompt.append(id)
+  256          else:
+
+  258              asset_name = token[1:-1]
+  259:             assert asset_name in prompt_assets, f"missing prompt asset {asset_name}"
+  260:             asset = prompt_assets[asset_name]
+  261              obj_info = asset["segm"]["obj_info"]
+
+  312                  obj_repr["cropped_img"][view] = cropped_imgs
+  313:             filled_prompt.append(obj_repr)
+  314:     raw_prompt = [filled_prompt]
+  315:     max_n_objs_prompt = {view: 0 for view in views}
+  316:     for prompt in raw_prompt:
+  317:         for token in prompt:
+  318              if isinstance(token, dict):
+  319                  for view in views:
+  320:                     max_n_objs_prompt[view] = max(
+  321:                         max_n_objs_prompt[view], len(token["cropped_img"][view])
+  322                      )
+  323:     raw_prompt_token_type, word_batch, image_batch = [], [], []
+  324:     for prompt in raw_prompt:
+  325          token_type = []
+  326:         for token in prompt:
+  327              if isinstance(token, int):
+
+  331                  token_type.append(1)
+  332:                 n_objs_prompt = {
+  333                      view: len(token["cropped_img"][view]) for view in views
+
+  336                  token["mask"] = {
+  337:                     view: np.ones((n_objs_prompt[view],), dtype=np.bool)
+  338                      for view in views
+
+  340                  n_objs_to_pad = {
+  341:                     view: max_n_objs_prompt[view] - n_objs_prompt[view]
+  342                      for view in views
+
+  362                  image_batch.append(token)
+  363:         raw_prompt_token_type.append(token_type)
+  364:     assert sum([len(prompt) for prompt in raw_prompt_token_type]) == len(
+  365          word_batch
+
+  371      image_batch = image_batch.to_torch_tensor()
+  372:     return raw_prompt_token_type, word_batch, image_batch
+  373  
+
+vima/nn/__init__.py:
+  3  from .obj_encoder import *
+  4: from .prompt_encoder import *
+  5  from .seq_modeling import *
+
+vima/nn/prompt_encoder/__init__.py:
+  1: from .prompt_encoder import T5PromptEncoder
+  2  from .word_embd import WordEmbedding
+
+vima/nn/prompt_encoder/prompt_encoder.py:
+  21  
+  22: class T5PromptEncoder(nn.Module):
+  23      def __init__(self):
+
+vima/nn/seq_modeling/xattn_gpt/xattn_gpt.py:
+   77          obs_action_position_ids: torch.LongTensor | None = None,
+   78:         prompt_tokens: torch.Tensor,
+   79:         prompt_mask: torch.Tensor | None = None,
+   80:         prompt_position_ids: torch.LongTensor | None = None,
+   81          batch_first: bool = False,
+
+   86                  obs_action_tokens,
+   87:                 prompt_tokens,
+   88:                 prompt_mask,
+   89                  batch_first,
+
+   97              obs_action_tokens = obs_action_tokens.transpose(0, 1)
+   98:             prompt_tokens = prompt_tokens.transpose(0, 1)
+   99          input_shape = obs_action_tokens.size()[:-1]
+
+  109  
+  110:         assert prompt_tokens.size(1) <= self.xattn_position_ids.size(0)
+  111:         if prompt_position_ids is None:
+  112:             prompt_position_ids = self.xattn_position_ids[None, : prompt_tokens.size(1)]
+  113:         prompt_position_embds = self.xattn_positions_embed(prompt_position_ids)
+  114:         prompt_tokens = prompt_tokens + prompt_position_embds
+  115  
+
+  125                  q=obs_action_tokens,
+  126:                 kv=prompt_tokens,
+  127:                 attention_mask=prompt_mask,
+  128                  kv_position_ids=None,
+
+  143          obs_action_tokens: torch.Tensor,
+  144:         prompt_tokens: torch.Tensor,
+  145:         prompt_mask: torch.Tensor | None = None,
+  146          batch_first: bool = False,
+
+  150          assert obs_action_tokens.dtype == torch.float32
+  151:         assert prompt_tokens.dim() == 3
+  152:         assert prompt_tokens.dtype == torch.float32
+  153  
+
+  155              B_oa, L_oa, E_oa = obs_action_tokens.shape
+  156:             B_p, L_p, E_p = prompt_tokens.shape
+  157          else:
+  158              L_oa, B_oa, E_oa = obs_action_tokens.shape
+  159:             L_p, B_p, E_p = prompt_tokens.shape
+  160          assert B_oa == B_p
+
+  163  
+  164:         if prompt_mask is not None:
+  165              # fmt: off
+  166:             assert prompt_mask.shape == (B, L_p) or prompt_mask.shape == (B, 1, L_p), \
+  167:                 f"Expect `prompt_mask` to have shape of either ({B, 1, L_p}) or ({B, L_p}), but got {prompt_mask.shape}"
+  168              # fmt: on
+
+  170              assert torch.all(
+  171:                 prompt_mask.sum(dim=-1) > 0
+  172              ), "each source token should attend to at least one target token"
+  173:             assert prompt_mask.dtype == torch.bool
+  174          if obs_action_masks is not None:
+
+vima/policy/vima_flamingo_policy.py:
+  103  
+  104:         self.prompt_embedding = vnn.WordEmbedding()
+  105:         self.t5_prompt_encoder = vnn.T5PromptEncoder()
+  106:         self.t5_prompt_encoder_post_layer = (
+  107              nn.Identity()
+  108:             if embed_dim == self.t5_prompt_encoder.output_dim
+  109:             else nn.Linear(self.t5_prompt_encoder.output_dim, embed_dim, bias=False)
+  110          )
+  111  
+  112:         self.prompt_obj_post_layer = vnn.build_mlp(
+  113              self.obj_encoder.output_dim,
+
+  128          action_token: torch.Tensor | None,
+  129:         prompt_token: torch.Tensor,
+  130:         prompt_token_mask: torch.Tensor,
+  131      ):
+
+  151              obs_action_tokens=tokens,
+  152:             prompt_tokens=prompt_token,
+  153:             prompt_mask=prompt_token_mask,
+  154          )
+
+  159  
+  160:     def forward_prompt_assembly(self, prompts):
+  161:         raw_prompts_token_type, word_batch, image_batch = prompts
+  162          L_max = 0
+  163:         for raw_prompt in raw_prompts_token_type:
+  164              L_this = 0
+  165:             for item in raw_prompt:
+  166                  if item == 0:
+
+  170                  else:
+  171:                     raise ValueError(f"Invalid prompt token type {item}")
+  172              L_max = max(L_max, L_this)
+  173          n_words = word_batch.shape[0]
+  174:         batch_word_emb = self.prompt_embedding(word_batch)
+  175          batch_image_emb = self.obj_encoder(**image_batch)
+  176:         batch_image_emb = self.prompt_obj_post_layer(batch_image_emb)
+  177:         prompt_tokens, prompt_masks = [], []
+  178          word_ptr, img_ptr = 0, 0
+  179:         for raw_prompt in raw_prompts_token_type:
+  180:             assembled_prompt = []
+  181:             for item in raw_prompt:
+  182                  if item == 0:
+  183:                     assembled_prompt.append(batch_word_emb[word_ptr])
+  184                      word_ptr += 1
+
+  186                      for q in range(self._obj_xf_num_queries):
+  187:                         assembled_prompt.append(batch_image_emb[img_ptr][q])
+  188                      img_ptr += 1
+
+  190                      raise ValueError(f"Invalid type: {type(item)}")
+  191:             valid_tokens = len(assembled_prompt)
+  192              num_padding = L_max - valid_tokens
+  193:             assembled_prompt = torch.stack(assembled_prompt, dim=0)
+  194              required_padding = torch.zeros(
+  195:                 (num_padding, assembled_prompt.shape[1]),
+  196                  dtype=torch.float32,
+
+  198              )
+  199:             assembled_prompt = torch.cat([assembled_prompt, required_padding], dim=0)
+  200:             prompt_tokens.append(assembled_prompt)
+  201:             prompt_masks.append(
+  202                  torch.cat(
+
+  209              )
+  210:         prompt_tokens = torch.stack(prompt_tokens, dim=0)
+  211:         prompt_masks = torch.stack(prompt_masks, dim=0)
+  212:         prompt_tokens = prompt_tokens.transpose(0, 1)
+  213:         prompt_tokens = self.t5_prompt_encoder(
+  214:             prompt_tokens, attention_mask=prompt_masks, batch_first=False
+  215          )
+  216:         prompt_tokens = self.t5_prompt_encoder_post_layer(prompt_tokens)
+  217:         return prompt_tokens, prompt_masks
+  218  
+
+vima/policy/vima_gato_policy.py:
+   33          )
+   34:         self.prompt_sep_token = nn.Parameter(torch.zeros(embed_dim))
+   35  
+
+   99  
+  100:         self.prompt_embedding = vnn.WordEmbedding()
+  101:         self.t5_prompt_encoder = vnn.T5PromptEncoder()
+  102:         self.t5_prompt_encoder_post_layer = (
+  103              nn.Identity()
+  104:             if embed_dim == self.t5_prompt_encoder.output_dim
+  105:             else nn.Linear(self.t5_prompt_encoder.output_dim, embed_dim, bias=False)
+  106          )
+  107:         self.prompt_obj_post_layer = vnn.build_mlp(
+  108              self.obj_encoder.output_dim,
+
+  123          action_token: torch.Tensor | None,
+  124:         prompt_token: torch.Tensor,
+  125:         prompt_token_mask: torch.Tensor,
+  126      ):
+  127          B = obs_token.shape[1]
+  128:         L_obs, L_prompt = obs_token.shape[0], prompt_token.shape[0]
+  129          L_action = 0 if action_token is None else action_token.shape[0]
+  130:         L = L_obs * self._obj_xf_num_queries + L_action + L_prompt + 1
+  131  
+
+  134          )
+  135:         tokens[:L_prompt] = prompt_token
+  136:         tokens[L_prompt] = self.prompt_sep_token.unsqueeze(0).repeat(B, 1)
+  137          obs_token = rearrange(obs_token, "L B Q E -> B L Q E")
+
+  140          for q in range(self._obj_xf_num_queries):
+  141:             tokens[L_prompt + 1 + q :: self._obj_xf_num_queries + 1] = obs_token[
+  142                  q :: self._obj_xf_num_queries
+
+  145              tokens[
+  146:                 L_prompt + 1 + self._obj_xf_num_queries :: self._obj_xf_num_queries + 1
+  147              ] = action_token
+
+  149              [
+  150:                 prompt_token_mask,
+  151:                 torch.ones((B, L - L_prompt), dtype=torch.bool, device=self.device),
+  152              ],
+
+  155          mask = mask.unsqueeze(1)
+  156:         n_valid_prompt_tokens = prompt_token_mask.sum(dim=1)
+  157:         prompt_position_ids = any_stack(
+  158              [
+
+  162                          torch.zeros(
+  163:                             L_prompt - n_valids, dtype=torch.long, device=self.device
+  164                          ).fill_(n_valids - 1),
+
+  167                  )
+  168:                 for n_valids in n_valid_prompt_tokens
+  169              ],
+
+  179                  )
+  180:                 for n_valids in n_valid_prompt_tokens
+  181              ],
+
+  183          )
+  184:         position_ids = any_concat([prompt_position_ids, seq_position_ids], dim=1)
+  185          tokens_out = self.transformer(
+
+  188          predicted_action_tokens = tokens_out[
+  189:             L_prompt + 1 + self._obj_xf_num_queries - 1 :: self._obj_xf_num_queries + 1
+  190          ]
+
+  192  
+  193:     def forward_prompt_assembly(self, prompts):
+  194:         raw_prompts_token_type, word_batch, image_batch = prompts
+  195          L_max = 0
+  196:         for raw_prompt in raw_prompts_token_type:
+  197              L_this = 0
+  198:             for item in raw_prompt:
+  199                  if item == 0:
+
+  203                  else:
+  204:                     raise ValueError(f"Invalid prompt token type {item}")
+  205              L_max = max(L_max, L_this)
+
+  207          n_words = word_batch.shape[0]
+  208:         batch_word_emb = self.prompt_embedding(word_batch)
+  209          n_img = len(list(image_batch["rgb"].values())[0])
+  210          batch_image_emb = self.obj_encoder(**image_batch)
+  211:         batch_image_emb = self.prompt_obj_post_layer(batch_image_emb)
+  212:         prompt_tokens, prompt_masks = [], []
+  213          word_ptr, img_ptr = 0, 0
+  214:         for raw_prompt in raw_prompts_token_type:
+  215:             assembled_prompt = []
+  216:             for item in raw_prompt:
+  217                  if item == 0:
+  218:                     assembled_prompt.append(batch_word_emb[word_ptr])
+  219                      word_ptr += 1
+
+  221                      for q in range(self._obj_xf_num_queries):
+  222:                         assembled_prompt.append(batch_image_emb[img_ptr][q])
+  223                      img_ptr += 1
+
+  225                      raise ValueError(f"Invalid type: {type(item)}")
+  226:             valid_tokens = len(assembled_prompt)
+  227              num_padding = L_max - valid_tokens
+  228:             assembled_prompt = torch.stack(assembled_prompt, dim=0)
+  229              required_padding = torch.zeros(
+  230:                 (num_padding, assembled_prompt.shape[1]),
+  231                  dtype=torch.float32,
+
+  233              )
+  234:             assembled_prompt = torch.cat([assembled_prompt, required_padding], dim=0)
+  235:             prompt_tokens.append(assembled_prompt)
+  236:             prompt_masks.append(
+  237                  torch.cat(
+
+  244              )
+  245:         prompt_tokens = torch.stack(prompt_tokens, dim=0)
+  246:         prompt_masks = torch.stack(prompt_masks, dim=0)
+  247:         prompt_tokens = prompt_tokens.transpose(0, 1)
+  248:         prompt_tokens = self.t5_prompt_encoder(
+  249:             prompt_tokens, attention_mask=prompt_masks, batch_first=False
+  250          )
+  251:         prompt_tokens = self.t5_prompt_encoder_post_layer(prompt_tokens)
+  252:         return prompt_tokens, prompt_masks
+  253  
+
+vima/policy/vima_gpt_policy.py:
+   33          )
+   34:         self.prompt_sep_token = nn.Parameter(torch.zeros(embed_dim))
+   35  
+
+   98  
+   99:         self.prompt_embedding = vnn.WordEmbedding()
+  100:         self.t5_prompt_encoder = vnn.T5PromptEncoder()
+  101:         self.t5_prompt_encoder_post_layer = (
+  102              nn.Identity()
+  103:             if embed_dim == self.t5_prompt_encoder.output_dim
+  104:             else nn.Linear(self.t5_prompt_encoder.output_dim, embed_dim, bias=False)
+  105          )
+  106:         self.prompt_obj_post_layer = vnn.build_mlp(
+  107              self.obj_encoder.output_dim,
+
+  122          action_token: torch.Tensor | None,
+  123:         prompt_token: torch.Tensor,
+  124:         prompt_token_mask: torch.Tensor,
+  125      ):
+  126          B = obs_token.shape[1]
+  127:         L_obs, L_prompt = obs_token.shape[0], prompt_token.shape[0]
+  128          L_action = 0 if action_token is None else action_token.shape[0]
+  129:         L = L_obs + L_action + L_prompt + 1
+  130  
+
+  133          )
+  134:         tokens[:L_prompt] = prompt_token
+  135:         tokens[L_prompt] = self.prompt_sep_token.unsqueeze(0).repeat(B, 1)
+  136:         tokens[L_prompt + 1 :: 2] = obs_token
+  137          if action_token is not None:
+  138:             tokens[L_prompt + 2 :: 2] = action_token
+  139          mask = torch.cat(
+  140              [
+  141:                 prompt_token_mask,
+  142:                 torch.ones((B, L - L_prompt), dtype=torch.bool, device=self.device),
+  143              ],
+
+  146          mask = mask.unsqueeze(1)
+  147:         n_valid_prompt_tokens = prompt_token_mask.sum(dim=1)
+  148:         prompt_position_ids = any_stack(
+  149              [
+
+  153                          torch.zeros(
+  154:                             L_prompt - n_valids, dtype=torch.long, device=self.device
+  155                          ).fill_(n_valids - 1),
+
+  158                  )
+  159:                 for n_valids in n_valid_prompt_tokens
+  160              ],
+
+  170                  )
+  171:                 for n_valids in n_valid_prompt_tokens
+  172              ],
+
+  174          )
+  175:         position_ids = any_concat([prompt_position_ids, seq_position_ids], dim=1)
+  176          tokens_out = self.transformer(
+
+  178          )
+  179:         predicted_action_tokens = tokens_out[L_prompt + 1 :: 2]
+  180          return predicted_action_tokens
+  181  
+  182:     def forward_prompt_assembly(self, prompts):
+  183:         raw_prompts_token_type, word_batch, image_batch = prompts
+  184:         B = len(raw_prompts_token_type)
+  185          L_max = 0
+  186:         for raw_prompt in raw_prompts_token_type:
+  187              L_this = 0
+  188:             for item in raw_prompt:
+  189                  if item == 0:
+
+  193                  else:
+  194:                     raise ValueError(f"Invalid prompt token type {item}")
+  195              L_max = max(L_max, L_this)
+  196          n_words = word_batch.shape[0]
+  197:         batch_word_emb = self.prompt_embedding(word_batch)
+  198          n_img = len(list(image_batch["rgb"].values())[0])
+  199          batch_image_emb = self.obj_encoder(**image_batch)
+  200:         batch_image_emb = self.prompt_obj_post_layer(batch_image_emb)
+  201:         prompt_tokens, prompt_masks = [], []
+  202          word_ptr, img_ptr = 0, 0
+  203:         for raw_prompt in raw_prompts_token_type:
+  204:             assembled_prompt = []
+  205:             for item in raw_prompt:
+  206                  if item == 0:
+  207:                     assembled_prompt.append(batch_word_emb[word_ptr])
+  208                      word_ptr += 1
+  209                  elif item == 1:
+  210:                     assembled_prompt.append(batch_image_emb[img_ptr])
+  211                      img_ptr += 1
+
+  213                      raise ValueError(f"Invalid type: {type(item)}")
+  214:             valid_tokens = len(assembled_prompt)
+  215              num_padding = L_max - valid_tokens
+  216:             assembled_prompt = torch.stack(assembled_prompt, dim=0)
+  217              required_padding = torch.zeros(
+  218:                 (num_padding, assembled_prompt.shape[1]),
+  219                  dtype=torch.float32,
+
+  221              )
+  222:             assembled_prompt = torch.cat([assembled_prompt, required_padding], dim=0)
+  223:             prompt_tokens.append(assembled_prompt)
+  224:             prompt_masks.append(
+  225                  torch.cat(
+
+  232              )
+  233:         prompt_tokens = torch.stack(prompt_tokens, dim=0)
+  234:         prompt_masks = torch.stack(prompt_masks, dim=0)
+  235:         prompt_tokens = prompt_tokens.transpose(0, 1)
+  236:         prompt_tokens = self.t5_prompt_encoder(
+  237:             prompt_tokens, attention_mask=prompt_masks, batch_first=False
+  238          )
+  239:         prompt_tokens = self.t5_prompt_encoder_post_layer(prompt_tokens)
+  240:         return prompt_tokens, prompt_masks
+  241  
+
+vima/policy/vima_policy.py:
+   94  
+   95:         self.prompt_embedding = vnn.WordEmbedding()
+   96:         self.t5_prompt_encoder = vnn.T5PromptEncoder()
+   97:         self.t5_prompt_encoder_post_layer = (
+   98              nn.Identity()
+   99:             if embed_dim == self.t5_prompt_encoder.output_dim
+  100:             else nn.Linear(self.t5_prompt_encoder.output_dim, embed_dim, bias=False)
+  101          )
+  102  
+  103:         self.prompt_obj_post_layer = vnn.build_mlp(
+  104              self.obj_encoder.output_dim,
+
+  120          action_token: torch.Tensor | None,
+  121:         prompt_token: torch.Tensor,
+  122:         prompt_token_mask: torch.Tensor,
+  123      ):
+
+  146          position_ids = position_ids.long()
+  147:         prompt_position_ids = torch.cumsum(prompt_token_mask, dim=1) - 1
+  148  
+
+  150              obs_action_tokens=tokens,
+  151:             prompt_tokens=prompt_token,
+  152:             prompt_mask=prompt_token_mask,
+  153              obs_action_masks=masks.transpose(0, 1),
+  154              obs_action_position_ids=position_ids.transpose(0, 1),
+  155:             prompt_position_ids=prompt_position_ids,
+  156          )
+
+  160  
+  161:     def forward_prompt_assembly(self, prompts):
+  162:         raw_prompts_token_type, word_batch, image_batch = prompts
+  163:         batch_word_emb = self.prompt_embedding(word_batch)
+  164          batch_image_emb = self.obj_encoder(**image_batch)
+  165:         batch_image_emb = self.prompt_obj_post_layer(batch_image_emb)
+  166          n_max_objs = batch_image_emb.shape[-2]
+
+  168          L_max = 0
+  169:         for raw_prompt in raw_prompts_token_type:
+  170              L_this = 0
+  171:             for item in raw_prompt:
+  172                  if item == 0:
+
+  176                  else:
+  177:                     raise ValueError(f"Invalid prompt token type {item}")
+  178              L_max = max(L_max, L_this)
+  179  
+  180:         prompt_tokens, prompt_masks = [], []
+  181          word_ptr, img_ptr = 0, 0
+  182:         for raw_prompt in raw_prompts_token_type:
+  183:             assembled_prompt = []
+  184              assembled_mask = []
+  185:             for item in raw_prompt:
+  186                  if item == 0:
+  187:                     assembled_prompt.append(batch_word_emb[word_ptr])
+  188                      word_ptr += 1
+
+  198                      for q in range(n_max_objs):
+  199:                         assembled_prompt.append(batch_image_emb[img_ptr][q])
+  200                          assembled_mask.append(obj_mask[q])
+
+  203                      raise ValueError(f"Invalid type: {type(item)}")
+  204:             num_padding = L_max - len(assembled_prompt)
+  205:             assembled_prompt = torch.stack(assembled_prompt, dim=0)
+  206              required_padding = torch.zeros(
+  207:                 (num_padding, assembled_prompt.shape[1]),
+  208                  dtype=torch.float32,
+  209:                 device=assembled_prompt.device,
+  210              )
+  211:             assembled_prompt = torch.cat([assembled_prompt, required_padding], dim=0)
+  212:             prompt_tokens.append(assembled_prompt)
+  213  
+  214:             prompt_masks.append(
+  215                  torch.cat(
+
+  219                              dtype=torch.bool,
+  220:                             device=assembled_prompt.device,
+  221                          ),
+
+  224                              dtype=torch.bool,
+  225:                             device=assembled_prompt.device,
+  226                          ),
+
+  231  
+  232:         prompt_tokens = torch.stack(prompt_tokens, dim=0)
+  233:         prompt_masks = torch.stack(prompt_masks, dim=0)
+  234:         prompt_tokens = prompt_tokens.transpose(0, 1)
+  235:         if self.t5_prompt_encoder is not None:
+  236:             prompt_tokens = self.t5_prompt_encoder(
+  237:                 prompt_tokens, attention_mask=prompt_masks, batch_first=False
+  238              )
+  239:             prompt_tokens = self.t5_prompt_encoder_post_layer(prompt_tokens)
+  240:         return prompt_tokens, prompt_masks
+  241  
+
+VimaBench/datasheet.md:
+   5  ### For what purpose was the dataset created? 
+   6: We create this dataset to learn general robot manipulation with multimodal prompts.
+   7  
+
+  47  ### What do the instances that comprise the dataset represent?
+  48: Our data contain successful demonstrations to complete robotics tasks paired with multimodal prompts. Data modalities include RGB images, arrays (e.g., for actions), and structured data (e.g., for task meta info).
+  49  
+
+VimaBench/README.md:
+   18  
+   19: VIMA-Bench is a newly introduced task suite and benchmark for learning general robot manipulation with multimodal prompts. It features 17 representative tasks with multimodal prompt templates, which can be procedurally instantiated into thousands of individual instances by various combinations of textures and tabletop objects. It also establishes a 4-level protocol to evaluate progressively stronger generalization capabilities, from randomized object placement to novel tasks altogether. Finally, it provides a massive imitation dataset with 650K successful trajectories and multimodal prompts to learn general robot manipulation.
+   20  
+
+   29  # Getting Started
+   30: VIMA-Bench provides a [Gym-style](https://www.gymlibrary.dev/) interface for developing robot agents conditioned on multimodal prompts that interact with the simulator in a loop. Here is a very simple code snippet to instantiate the task "Visual Manipulation" and query the corresponding prompt:
+   31  
+
+   37  obs = env.reset()
+   38: prompt, prompt_assets = env.prompt, env.prompt_assets
+   39  ```
+
+   41  # Task Suite
+   42: VIMA-Bench features 17 representative tasks with multimodal prompt templates, which can be procedurally instantiated into thousands of individual instances by various combinations of textures and tabletop objects.
+   43  
+
+  149  # Training Data
+  150: We also release an offline dataset with 650K trajectories conditioned on multimodal prompts to learn general robot manipulation. Our dataset is hosted on [🤗Hugging Face](https://huggingface.co/datasets/VIMA/VIMA-Data).
+  151  
+
+  165  @inproceedings{jiang2023vima,
+  166:   title     = {VIMA: General Robot Manipulation with Multimodal Prompts},
+  167    author    = {Yunfan Jiang and Agrim Gupta and Zichen Zhang and Guanzhi Wang and Yongqiang Dou and Yanjun Chen and Li Fei-Fei and Anima Anandkumar and Yuke Zhu and Linxi Fan},
+
+VimaBench/scripts/data_loading.py:
+  46  
+  47:     prompt = traj_meta.pop("prompt")
+  48:     prompt_assets = traj_meta.pop("prompt_assets")
+  49  
+
+  62  
+  63:     print("Prompt: ", prompt)
+  64:     print("Prompt assets keys: ", str(list(prompt_assets.keys())))
+  65  
+
+VimaBench/scripts/data_generation/run.py:
+   62              elapsed_steps = 0
+   63:             meta, prompt, prompt_assets = env.meta_info, env.prompt, env.prompt_assets
+   64  
+
+  121              **meta,
+  122:             "prompt": prompt,
+  123:             "prompt_assets": prompt_assets,
+  124              "steps": elapsed_steps,
+
+VimaBench/scripts/oracle/conf.yaml:
+  11    display_debug_window: true
+  12:   render_prompt: true
+  13    hide_arm_rgb: false
+
+VimaBench/scripts/oracle/run.py:
+  21          env.render()
+  22:         prompt, prompt_assets = env.get_prompt_and_assets()
+  23:         print(prompt)
+  24          for _ in range(task.oracle_max_steps):
+
+VimaBench/vima_bench/__init__.py:
+   5  from .tasks import ALL_TASKS, ALL_PARTITIONS, PARTITION_TO_SPECS
+   6: from .env.wrappers import PromptRenderer, GUIRecorder
+   7  
+
+  23      display_debug_window: bool = False,
+  24:     render_prompt: bool = False,
+  25      record_gui: bool = False,
+
+  50          )
+  51:     if render_prompt:
+  52:         env = PromptRenderer(env)
+  53      return env
+
+VimaBench/vima_bench/env/base.py:
+  148  
+  149:         self.prompt, self.prompt_assets = None, None
+  150          self.meta_info = {}
+
+  239  
+  240:     def get_prompt_and_assets(self):
+  241          """
+  242:         Return prompt and prompt assets.
+  243          Intentionally make this method to preserve Gym API.
+  244:         Otherwise something like `initial_obs, prompt, p_assets = env.reset()` breaks Gym API.
+  245          """
+  246:         return self.prompt, self.prompt_assets
+  247  
+
+  328  
+  329:         # generate prompt and corresponding assets
+  330:         self.prompt, self.prompt_assets = self.task.generate_prompt()
+  331  
+
+  677          info = {
+  678:             "prompt": self.prompt,
+  679              "success": result_tuple.success,
+
+VimaBench/vima_bench/env/wrappers/__init__.py:
+  1: from .prompt_renderer import PromptRenderer
+  2  from .recorder import GUIRecorder
+
+VimaBench/vima_bench/env/wrappers/prompt_renderer.py:
+   12  
+   13: class PromptRenderer(gym.Wrapper):
+   14      def __init__(
+
+   26  
+   27:         self._display = Cv2Display(window_name="VIMA Task Prompt")
+   28:         self._prompt_img = None
+   29  
+
+   31          rtn = self.env.reset(*args, **kwargs)
+   32:         self._prompt_img = self.get_multi_modal_prompt_img()
+   33          return rtn
+
+   38      def render(self, mode="human", **kwargs):
+   39:         self._display(self._prompt_img)
+   40  
+
+   47  
+   48:     def get_prompt_img_from_text(
+   49          self,
+
+   76  
+   77:     def get_multi_modal_prompt_img(self):
+   78:         # make prompts
+   79:         prompt, prompt_assets = self.env.get_prompt_and_assets()
+   80  
+   81:         prompt_pieces = re.split(r"\{[^}]+\}", prompt)
+   82:         prompt_placeholders = re.findall(r"\{([^}]+)\}", prompt)
+   83          image_patches = []
+   84:         combined_prompt = self.get_prompt_img_from_text(
+   85:             prompt_pieces[0],
+   86              left_margin=5,
+   87          )
+   88:         image_patches.append(combined_prompt)
+   89:         if len(prompt_assets) > 0:  # multi-modal prompt
+   90:             for idx, text_piece in enumerate(prompt_pieces[1:]):
+   91:                 img_placeholder = prompt_assets[prompt_placeholders[idx]]["rgb"][
+   92                      "front"
+
+   98                  image_patches.append(img_placeholder)
+   99:                 img_text_piece = self.get_prompt_img_from_text(
+  100                      text_piece,
+
+  103  
+  104:         combined_prompt = np.concatenate(image_patches, axis=1)
+  105:         return combined_prompt
+  106  
+
+VimaBench/vima_bench/tasks/components/encyclopedia/definitions.py:
+  31      """
+  32:     name: name of the object, this name will be used in the prompts
+  33      assets: path of asset files
+
+VimaBench/vima_bench/tasks/components/placeholders/placeholder_obj.py:
+  20      """
+  21:     The placeholder object in the prompt.
+  22:     It should be a real instance of a certain object that appears in the prompt, instead of an encyclopedia entry.
+  23      After loading an object with `pybullet.load_urdf`,
+  24:     objects that will appear in the prompt should be wrapped with this class.
+  25      """
+
+VimaBench/vima_bench/tasks/components/placeholders/placeholder_scene.py:
+  21      """
+  22:     The placeholder scene in the prompt.
+  23      """
+
+VimaBench/vima_bench/tasks/components/placeholders/placeholder_texture.py:
+  11      """
+  12:     The placeholder texture in the prompt.
+  13      """
+
+VimaBench/vima_bench/tasks/task_suite/base.py:
+   39  
+   40:     `prompt_template` is a string object storing the template of the multimodal prompt for a certain task.
+   41      Placeholders should be wrapped with curly brackets, e.g., {object}, {color}, {number}, etc.
+
+   59          self,
+   60:         prompt_template: str,
+   61          task_meta: Any,
+
+   71      ):
+   72:         self.prompt_template = prompt_template
+   73          self.task_meta = task_meta
+
+  447  
+  448:     def generate_prompt(self, *args, **kwargs) -> Any:
+  449          """
+  450:         Generate prompt from `self.prompt_template`, 'self.task_meta', and `self.placeholders`.
+  451          This method may be invoked in `env.reset()`.
+
+  458              expressions[name] = placeholder.get_expression(**args)
+  459:         # now assemble the prompt
+  460:         prompt = deepcopy(self.prompt_template)
+  461          assets = {}
+
+  472              replacement = replacement[:-1]
+  473:             prompt = prompt.replace("{" + f"{name}" + "}", replacement)
+  474:         return prompt, assets
+  475  
+
+VimaBench/vima_bench/tasks/task_suite/constraint_satisfaction/base.py:
+   33          # ====== task specific ======
+   34:         prompt_template: str,
+   35          task_meta: dict,
+
+  117          super().__init__(
+  118:             prompt_template=prompt_template,
+  119              task_meta=task_meta,
+
+VimaBench/vima_bench/tasks/task_suite/constraint_satisfaction/without_exceeding.py:
+  71          super().__init__(
+  72:             prompt_template="Sweep {det} {swept_obj} into {bounds} without exceeding {constraint}.",
+  73              task_meta=task_meta,
+
+VimaBench/vima_bench/tasks/task_suite/constraint_satisfaction/without_touching.py:
+  64          super().__init__(
+  65:             prompt_template="Sweep {det} {swept_obj} into {bounds} without touching {constraint}.",
+  66              task_meta=task_meta,
+
+VimaBench/vima_bench/tasks/task_suite/instruction_following/rotate_base.py:
+   31          # ====== task specific ======
+   32:         prompt_template: str,
+   33          task_meta: dict[str:int],
+
+  120          super().__init__(
+  121:             prompt_template=prompt_template,
+  122              task_meta=task_meta,
+
+  140  
+  141:     def _reset_prompt(self, *args, **kwargs):
+  142          self.sampled_angle_of_rotation = self.rng.choice(
+
+  152          super().reset(env)
+  153:         self._reset_prompt(same_dragged_obj)
+  154  
+
+VimaBench/vima_bench/tasks/task_suite/instruction_following/rotate.py:
+   18          added to the ObjectPedia and objects with no rotational symmetry are used in this task.
+   19:         A sample prompt is 'Rotate the red heart clockwise 120 degrees.'
+   20          where the heart is the object to be dragged and 120 denotes the angle (in degrees) to be rotated.
+
+   92          super().__init__(
+   93:             prompt_template="Rotate the {dragged_obj} {angle_in_degree} degrees.",
+   94              task_meta=task_meta,
+
+  113  
+  114:     def _reset_prompt(self, same_dragged_obj: bool = False):
+  115:         super()._reset_prompt()
+  116          sampled_angle_in_degrees = round(math.degrees(self.sampled_angle_of_rotation))
+
+  119          if not same_dragged_obj and num_dragged_obj > 1:
+  120:             dragged_objs_prompt = [
+  121                  " {" + f"dragged_obj_{i}" + "}" for i in range(1, num_dragged_obj + 1)
+
+  124                  for i in range(1, num_dragged_obj * 2 - 1, 2):
+  125:                     dragged_objs_prompt.insert(i, " and")
+  126:             self.prompt_template = "".join(
+  127                  [
+  128                      "Rotate the",
+  129:                     *dragged_objs_prompt,
+  130                      f" {sampled_angle_in_degrees} degrees.",
+
+  133          else:
+  134:             prompt = "Rotate the {dragged_obj} {angle_in_degree} degrees."
+  135              partial_str = partial(
+  136:                 prompt.format,
+  137                  angle_in_degree=sampled_angle_in_degrees,
+  138              )
+  139:             self.prompt_template = partial_str(dragged_obj="{dragged_obj}")
+  140  
+
+VimaBench/vima_bench/tasks/task_suite/instruction_following/scene_understanding.py:
+  255          super().__init__(
+  256:             prompt_template="Put the {dragged_texture} object in {scene} into the {base_texture} object.",
+  257              task_meta=task_meta,
+
+  295  
+  296:         # add base obj texture and dragged obj texture to self.placeholders for the prompt
+  297          self.placeholders["base_texture"] = PlaceholderTexture(
+
+VimaBench/vima_bench/tasks/task_suite/instruction_following/simple_manipulation.py:
+  203          super().__init__(
+  204:             prompt_template="ak svfe {dragged_obj} isaao tsf {base_obj}.",
+  205              task_meta=task_meta,
+
+  219      def reset(self, env):
+  220:         self._reset_prompt()
+  221          super().reset(env)
+
+  469              raise ValueError("Error in sampling distractors")
+  470:         self._reset_prompt()
+  471  
+  472:     def _reset_prompt(self):
+  473          num_dragged_obj = self.task_meta["num_dragged_obj"]
+  474:         dragged_objs_prompt = [
+  475              " {" + f"dragged_obj_{i}" + "}" for i in range(1, num_dragged_obj + 1)
+
+  478              for i in range(1, num_dragged_obj * 2 - 1, 2):
+  479:                 dragged_objs_prompt.insert(i, " and")
+  480:         prompt = "".join(["Put the", *dragged_objs_prompt, " into the {base_obj}."])
+  481          # updates
+  482:         self.prompt_template = prompt
+  483  
+
+VimaBench/vima_bench/tasks/task_suite/novel_concept_grounding/novel_adj_and_noun.py:
+   89          ]
+   90:         self._original_prompt_template = deepcopy(self.prompt_template)
+   91  
+   92:     def _reset_prompt(self) -> bool:
+   93:         """reset prompt and return whether flip adjective"""
+   94:         flip_adjective = super()._reset_prompt()
+   95          novel_name_dragged_obj, novel_name_base_obj = self.rng.choice(
+
+  107  
+  108:         prompt_template = deepcopy(self._original_prompt_template)
+  109  
+  110:         prompt_template = prompt_template.replace(
+  111              "{dragged_obj}", novel_name_dragged_obj
+  112          )
+  113:         prompt_template = prompt_template.replace("{base_obj}", novel_name_base_obj)
+  114:         self.prompt_template = " ".join(obj_desc + [prompt_template])
+  115  
+
+VimaBench/vima_bench/tasks/task_suite/novel_concept_grounding/novel_adj.py:
+  247  
+  248:         prompt_template = ""
+  249          for i in range(n_supports):
+
+  252              _novel_adj_str = "{novel_adj}"
+  253:             prompt_template += (
+  254                  f"{_blicker_str} is {_novel_adj_str} than {_less_blicker_str}. "
+  255              )
+  256:         prompt_template += "Put the {adv}{novel_adj} {dragged_obj} into the {base_obj}."
+  257  
+  258          super().__init__(
+  259:             prompt_template=prompt_template,
+  260              task_meta=task_meta,
+
+  271  
+  272:     def _reset_prompt(self) -> bool:
+  273:         """reset prompt and return whether flip adjective"""
+  274          adjective_name = self.rng.choice(self.novel_adjectives)
+
+  282          super().reset(env)
+  283:         flip_adjective = self._reset_prompt()
+  284  
+
+  472              dragged = [(dragged_obj_id, (0, None))]
+  473:             # generates a normal-size gray obj for prompt to avoid spoiling which object to drag
+  474              placeholder_obj_urdf = get_urdf_path(
+
+VimaBench/vima_bench/tasks/task_suite/novel_concept_grounding/novel_noun.py:
+   82  
+   83:     def _reset_prompt(self):
+   84:         # compose certain_objs string in the prompt
+   85          num_dragged_obj = self.task_meta["num_dragged_obj"]
+
+  126  
+  127:         self.prompt_template = (
+  128              "Put {certain_objs} into a {novel_name_base_obj}.".format(
+
+  133  
+  134:         # combine obj_desc_prompt and prompt_template to get the final prompt
+  135:         self.prompt_template = " ".join([*obj_desc, self.prompt_template])
+  136  
+
+  138          super().reset(env)
+  139:         self._reset_prompt()
+
+VimaBench/vima_bench/tasks/task_suite/novel_concept_grounding/twist.py:
+   18      Novel concept (verbs) grounding: Object Twisting Tasks
+   19:         The agent needs to learn from the prompt how is "twist" defined,
+   20          and what is the exact angle to twist. Like the ring balancing tasks,
+
+  105  
+  106:         prompt_template = (
+  107              """"Twist" is defined as rotating object a specific angle. For examples:"""
+
+  111              _end_str = "{" + f"after_twist_{i+1}" + "}"
+  112:             prompt_template += f" From {_start_str} to {_end_str}."
+  113:         prompt_template += " Now twist all {twist_obj_texture} objects."
+  114  
+  115          super().__init__(
+  116:             prompt_template=prompt_template,
+  117              task_meta=task_meta,
+
+  132  
+  133:     def _reset_prompt(self, *args, **kwargs):
+  134          self.task_meta["num_dragged_obj"] = self.rng.integers(
+
+  139          )
+  140:         super()._reset_prompt()
+  141          self.placeholders["twist_obj_texture"] = PlaceholderText(
+
+  183  
+  184:             # --- calculate center pose (used in the scene prompt) ----
+  185              # calculate bounds
+
+VimaBench/vima_bench/tasks/task_suite/one_shot_imitation/follow_motion.py:
+   27      This task is one of the tasks that have strict requirements on the manipulation sequence.
+   28:     The agent is required to precisely follow a leader object's motion, which is presented in the prompt frames.
+   29      And here we define the motion as a random walk along a polygon that approximates a circle.
+
+  159          super().__init__(
+  160:             prompt_template=(
+  161                  "Follow this motion for {dragged_obj}: "
+
+  222  
+  223:     def _reset_prompt(self):
+  224          self.num_operations = self.task_meta["num_frames"] - 1
+
+  226  
+  227:         self.prompt_template = (
+  228              "Follow this motion for {dragged_obj}: "
+
+  254          super().reset(env)
+  255:         self._reset_prompt()
+  256  
+
+  371  
+  372:         # sample distractor in prompt scene (hardly ever reject sampling)
+  373          for i in range(self.REJECT_SAMPLING_MAX_TIMES):
+
+  385  
+  386:         # create scene placeholder in the prompt
+  387          def create_scene_fn(scene_render_env: SceneRenderEnv, _, frame_idx: int):
+
+VimaBench/vima_bench/tasks/task_suite/one_shot_imitation/follow_order.py:
+  156          super().__init__(
+  157:             prompt_template=(
+  158                  "Stack objects in this order "
+
+  219  
+  220:     def _reset_prompt(self):
+  221          self.num_operations = self.task_meta["num_frames"] - 1
+
+  223          self.rng.shuffle(self.possible_moving_sequence)
+  224:         self.prompt_template = (
+  225              "Stack objects in this order "
+
+  242          super().reset(env)
+  243:         self._reset_prompt()
+  244  
+
+  313  
+  314:         # generate video prompt
+  315          blocks_in_scene = copy.deepcopy(blocks)
+
+  390  
+  391:         # create scene placeholder in the prompt
+  392          def create_scene_fn(
+
+VimaBench/vima_bench/tasks/task_suite/rearrangement/rearrange_base.py:
+   33          # ====== task specific ======
+   34:         prompt_template: str,
+   35          num_dragged_obj: int = 2,
+
+  153          super().__init__(
+  154:             prompt_template=prompt_template,
+  155              task_meta=task_meta,
+
+  384  
+  385:         # create scene placeholder in the prompt
+  386          def create_scene_fn(scene_render_env: SceneRenderEnv, sim_id: int):
+
+VimaBench/vima_bench/tasks/task_suite/rearrangement/rearrange.py:
+  43          super().__init__(
+  44:             prompt_template="Rearrange to this {scene}.",
+  45              num_dragged_obj=num_dragged_obj,
+
+VimaBench/vima_bench/tasks/task_suite/require_memory/manipulate_old_neighbor.py:
+  217          super().__init__(
+  218:             prompt_template=(
+  219                  "First put {dragged_obj} into {base_obj} "
+
+  235  
+  236:     def _reset_prompt(self):
+  237  
+
+  336          )
+  337:         self.prompt_template = partial_str(
+  338              dragged_obj="{dragged_obj}", base_obj="{base_obj}"
+
+  342          super().reset(env)
+  343:         self._reset_prompt()
+  344          zero_rot = eulerXYZ_to_quatXYZW((0, 0, 0))
+
+VimaBench/vima_bench/tasks/task_suite/require_memory/pick_in_order_then_restore.py:
+  208          super().__init__(
+  209:             prompt_template=(
+  210                  "Put {dragged_obj} into {base_obj}. "
+
+  260  
+  261:     def _reset_prompt(self):
+  262          # for more than one target bases
+  263          num_base_obj = self.task_meta["num_target_base_obj"]
+  264:         bases_prompt = [" {" + f"base_obj_{i+1}" + "}" for i in range(num_base_obj)]
+  265          if num_base_obj > 1:
+  266              for i in range(1, num_base_obj * 2 - 1, 2):
+  267:                 bases_prompt.insert(i, " then")
+  268:         self.prompt_template = "".join(
+  269              [
+  270                  "Put {dragged_obj} into",
+  271:                 *bases_prompt,
+  272                  ". Finally restore it into its original container.",
+
+  277          super().reset(env)
+  278:         self._reset_prompt()
+  279          # sample everything first
+
+VimaBench/vima_bench/tasks/task_suite/require_memory/rearrange_then_restore.py:
+  44          super().__init__(
+  45:             prompt_template="Rearrange objects to this setup {scene} and then restore.",
+  46              num_dragged_obj=num_dragged_obj,
+
+VimaBench/vima_bench/tasks/task_suite/require_reasoning/same_color.py:
+  191          super().__init__(
+  192:             prompt_template="Put all objects with the same texture as {base_obj} into it.",
+  193              task_meta=task_meta,
+
+VimaBench/vima_bench/tasks/task_suite/require_reasoning/same_profile.py:
+  72          ), "possible dragged object should include both square and other profiles"
+  73:         self.prompt_template = (
+  74              "Put all objects with the same profile as {base_obj} into it."
