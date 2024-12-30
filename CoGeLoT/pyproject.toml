@@ -26,7 +26,7 @@ dependencies = [
     "datasets>=2.14.4",
     "wandb>=0.15.8",
     "pillow>=10.0.0",
-    "opencv-python-headless>=4.8.0.76",
+    "opencv-python",
     "einops>=0.6.1",
     "pandas>=2.0.3",
     "pydantic-settings>=2.0.3",

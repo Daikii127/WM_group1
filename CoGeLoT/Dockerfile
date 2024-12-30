@@ -12,8 +12,15 @@ RUN apt-get update && \
     vim \
     sudo \
     curl \
-    tmux && \
+    tmux \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    x11-apps \
+    xauth && \
     rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install -y mesa-utils
+
 
 # user設定
 ARG user=${user:-user}

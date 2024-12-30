@@ -38,11 +38,16 @@ services:
             - TORCH_HOME=~/workspace/torch
             - HF_TOKEN=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
             - WANDB_API_KEY=8cc0e7528ea4f787bdebd89491fb6ecff3184605
+            - LIBGL_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
+            - LIBGL_DEBUG=verbose         # Mesaのデバッグ情報を有効化
+            - MESA_GL_VERSION_OVERRIDE=3.3  # OpenGLバージョンを3.3に強制
+            - MESA_GLSL_VERSION_OVERRIDE=330
+            - DRI_PRIME=1
 
 
         # マウント処理。:で分割し、左がホスト、右がdocker内
         volumes:
-            - "~/Desktop/hf:/home/$(whoami)/huggingface"
+            - "~/Desktop/hf:/home/$(whoami)/huggingface" # これは変える必要ある
             - "~/workspace/WM_group1/CoGeLoT:/home/$(whoami)/workspace/"
             - "/tmp/.X11-unix:/tmp/.X11-unix"
 
