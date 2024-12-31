@@ -36,8 +36,8 @@ services:
             - NVIDIA_DRIVER_CAPABILITIES=all
             - HF_HOME=~/huggingface
             - TORCH_HOME=~/workspace/torch
-            - HF_TOKEN=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
-            - WANDB_API_KEY=8cc0e7528ea4f787bdebd89491fb6ecff3184605
+            - HF_TOKEN=
+            - WANDB_API_KEY=
             - LIBGL_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
             - LIBGL_DEBUG=verbose         # Mesaのデバッグ情報を有効化
             - MESA_GL_VERSION_OVERRIDE=3.3  # OpenGLバージョンを3.3に強制
