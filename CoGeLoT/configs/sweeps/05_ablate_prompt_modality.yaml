@@ -11,7 +11,7 @@ program: src/cogelot/entrypoints/evaluate.py
 name: Ablate with shuffled obj obs
 
 entity: daiki-takahashi-
-project: cogelot-evaluation
+project: default_200M-evaluation
 
 method: grid
 

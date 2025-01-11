@@ -8,4 +8,4 @@
 
 module load apps/ffmpeg
 
-SLURM_JOB_NAME='bash' pdm run python -m wandb agent daiki-takahashi-/cogelot-evaluation/"$1"
+SLURM_JOB_NAME='bash' pdm run python -m wandb agent daiki-takahashi-/default_200M-evaluation/"$1"

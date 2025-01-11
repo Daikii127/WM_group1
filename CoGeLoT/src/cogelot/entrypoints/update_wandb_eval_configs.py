@@ -9,7 +9,7 @@ from cogelot.common.config_metadata_patcher import build_eval_run_name, update_e
 
 def update_wandb_eval_configs() -> None:
     """Update the evaluation config for all runs in the project."""
-    runs = wandb.Api().runs("daiki-takahashi-/cogelot-evaluation")
+    runs = wandb.Api().runs("daiki-takahashi-/default_200M-evaluation")
     for run in tqdm(runs):
         omegaconf_config = OmegaConf.from_dotlist(convert_to_dotlist(run.config))
 

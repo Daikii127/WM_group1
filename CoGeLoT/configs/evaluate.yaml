@@ -9,7 +9,7 @@ defaults:
   - model@model.model: from_hf_repo
   - datamodule: evaluation
   - hydra: default
-  - hardware: default
+  - hardware: eidf_4gpu
   - debug: null
   - _self_
 
@@ -25,7 +25,7 @@ model:
   # max_timesteps: int | oracle_max_steps | num_dragged_obj
   max_timesteps: 10
   should_stop_on_first_success: true
-  should_shuffle_obj_per_observations: false
+  should_shuffle_obj_per_observations: true
   difficulty: easy
 
 trainer:

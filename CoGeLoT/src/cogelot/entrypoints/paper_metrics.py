@@ -62,7 +62,7 @@ def get_baseline_run_id(run: Run) -> str:
 
 def get_run(run_id: str) -> Run:
     """Get the run from WandB."""
-    run = wandb.Api().run(f"daiki-takahashi-/cogelot-evaluation/{run_id}")
+    run = wandb.Api().run(f"daiki-takahashi-/default_200M-evaluation/{run_id}")
     # Print information about the run
     console.print("Run:", run.id)
     console.print("Name:", run.name)
@@ -253,7 +253,7 @@ class EvaluationPerformancePrinter:
     ) -> dict[Level, dict[int, Decimal]]:
         """Compute the delta performance."""
         baseline_run_id = get_baseline_run_id(run)
-        baseline_run = wandb.Api().run(f"daiki-takahashi-/cogelot-evaluation/{baseline_run_id}")
+        baseline_run = wandb.Api().run(f"daiki-takahashi-/default_200M-evaluation/{baseline_run_id}")
         baseline_performance = self.get_evaluation_performance(baseline_run)
         delta_performance = {}
         for level in self.levels:

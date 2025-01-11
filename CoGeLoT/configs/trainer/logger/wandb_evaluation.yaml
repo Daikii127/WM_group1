@@ -1,6 +1,6 @@
 wandb:
   _target_: pytorch_lightning.loggers.WandbLogger
   save_dir: ${output_dir}
-  project: cogelot-evaluation
+  project: default_200M-evaluation
   entity: daiki-takahashi-
   log_model: False

@@ -4,7 +4,7 @@ import wandb
 from pydantic import BaseModel
 
 WANDB_ENTITY = "daiki-takahashi-"
-WANDB_PROJECT = "cogelot-evaluation"
+WANDB_PROJECT = "default_200M-evaluation"
 
 
 InstanceTransformType = Literal[

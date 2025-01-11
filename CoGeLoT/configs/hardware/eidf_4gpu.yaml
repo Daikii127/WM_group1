@@ -5,7 +5,7 @@ defaults:
   - override /datamodule: from_hf
 
 datamodule:
-  batch_size: 32
+  batch_size: 16
   num_workers: 7
 
 trainer:
