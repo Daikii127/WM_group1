@@ -12,7 +12,7 @@ should_shuffle_obj_per_observations: false
 
 policy:
   _target_: cogelot.modules.policy.Policy
-  embed_dim: 512
+  embed_dim: 768
 
   transformer_decoder: ???
   action_encoder: ???
@@ -42,11 +42,11 @@ policy:
 
   prompt_embedding:
     _target_: cogelot.modules.text_encoders.T5TextEmbedder
-    pretrained_model: t5-small
+    pretrained_model:  t5-base
 
   prompt_encoder:
     _target_: cogelot.modules.text_encoders.T5PromptEncoder.from_pretrained
-    pretrained_model_name_or_path: t5-small
+    pretrained_model_name_or_path:  t5-base
 
   prompt_obj_post_layer:
     _target_: vima.nn.build_mlp

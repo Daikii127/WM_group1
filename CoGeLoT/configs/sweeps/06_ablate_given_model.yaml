@@ -13,7 +13,7 @@ program: src/cogelot/entrypoints/evaluate.py
 name: Ablate Provided Checkpoint
 
 entity: daiki-takahashi-
-project: default_200M-evaluation
+project: evaluation
 
 method: grid
 

@@ -101,6 +101,27 @@ class VIMALightningModule(pl.LightningModule):
         )
         return cls.from_checkpoint(model_checkpoint_path)
 
+    # eval_original
+    # @classmethod
+    # def from_hf_repo(
+    #     cls,
+    #     wandb_run_id: str,
+    #     # hf_repo_id: str,
+    #     epoch: int = -1,
+    # ) -> Self:
+    #     # """Instantiate the model by getting the checkpoint from a wandb run."""
+    #     # model_path_in_repo = get_model_checkpoint_file_in_remote_repo_for_epoch(
+    #     #     repo_id=hf_repo_id, run_id=wandb_run_id, epoch=epoch
+    #     # )
+    #     # logger.info(f"Downloading model from remote path: `{model_path_in_repo}`")
+    #     # model_checkpoint_path = download_model_checkpoint(
+    #     #     repo_id=hf_repo_id, file_path_in_repo=model_path_in_repo
+    #     # )
+    #     # model_checkpoint_path = "./storage/data/outputs/train/runs/2025-01-06_08-03-47/checkpoints/epoch=02-val_loss=0.92.ckpt"
+    #     model_checkpoint_path = "./storage/data/outputs/train/runs/axis_dependency/epoch=02-val_loss=1.00.ckpt"
+    #     # model_checkpoint_path = "./storage/data/outputs/train/runs/2025-01-06_07-56-55/checkpoints/epoch=02-val_loss=1.24.ckpt"
+    #     return cls.from_checkpoint(model_checkpoint_path)
+
     def forward(self, batch: ModelInstance) -> torch.Tensor:
         """Perform the forward on a batch of instances."""
         return self.policy.predict_action_logits(

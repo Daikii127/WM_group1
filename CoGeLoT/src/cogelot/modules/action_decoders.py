@@ -69,6 +69,49 @@ class VIMAActionDecoder(ActionDecoder):
         return logits
 
 
+# class TokenPerAxisActionDecoder(ActionDecoder):
+#     """Decode actions by predicting a token per axis."""
+
+#     def __init__(
+#         self, *, input_dim: int, max_num_action_bins: int, num_action_tokens_per_timestep: int = 14
+#     ) -> None:
+#         super().__init__()
+#         self._max_num_action_bins = max_num_action_bins
+#         self._num_action_tokens_per_timestep = num_action_tokens_per_timestep
+
+#         self.projection = torch.nn.Linear(input_dim, max_num_action_bins)
+
+#     @property
+#     def num_action_tokens_per_timestep(self) -> int:
+#         """The supported number of action tokens per timestep."""
+#         return self._num_action_tokens_per_timestep
+
+#     def forward(self, transformer_output: torch.Tensor, *, max_num_objects: int) -> torch.Tensor:
+#         """Process the output from an autoregressive decoder."""
+#         num_tokens_per_timestep = max_num_objects + self.num_action_tokens_per_timestep
+
+#         transformer_output_per_timestep = rearrange(
+#             transformer_output,
+#             "bsz (timesteps num_tokens_per_timestep) dim -> bsz timesteps num_tokens_per_timestep dim",
+#             num_tokens_per_timestep=num_tokens_per_timestep,
+#         )
+
+#         # Shape (batch size, timesteps, num action tokens per timestep, embed dim)
+#         action_tokens_from_transformer = transformer_output_per_timestep[
+#             :, :, max_num_objects - 1 : -1, :
+#         ]
+
+#         # Shape (batch size, timesteps, num action tokens per timestep, max num action bins)
+#         logits_per_token_per_timestep: torch.Tensor = self.projection(
+#             action_tokens_from_transformer
+#         )
+#         logits = rearrange(
+#             logits_per_token_per_timestep,
+#             "bsz timesteps action_tokens action_bins -> action_tokens bsz timesteps action_bins",
+#         )
+#         return logits
+
+
 class TokenPerAxisActionDecoder(ActionDecoder):
     """Decode actions by predicting a token per axis."""
 
@@ -102,11 +145,20 @@ class TokenPerAxisActionDecoder(ActionDecoder):
         ]
 
         # Shape (batch size, timesteps, num action tokens per timestep, max num action bins)
-        logits_per_token_per_timestep: torch.Tensor = self.projection(
-            action_tokens_from_transformer
-        )
+        # 自己回帰的なデコードを行うための変更部分
+        logits_list = []
+
+        for i in range(self._num_action_tokens_per_timestep):
+            current_tokens = action_tokens_from_transformer[:, :, : i + 1, :]
+            current_logits = self.projection(current_tokens)
+
+            logits_list.append(current_logits)
+
+        logits = torch.cat(logits_list, dim=-2)
+
         logits = rearrange(
-            logits_per_token_per_timestep,
+            logits,
             "bsz timesteps action_tokens action_bins -> action_tokens bsz timesteps action_bins",
         )
+
         return logits

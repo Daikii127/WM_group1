@@ -10,7 +10,7 @@ program: src/cogelot/entrypoints/train.py
 
 name: disable_text
 entity: daiki-takahashi-
-project: CoGeLoT
+project: train
 
 method: grid
 

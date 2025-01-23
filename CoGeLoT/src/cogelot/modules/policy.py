@@ -60,7 +60,7 @@ class Policy(torch.nn.Module):
         prompt_obj_post_layer: torch.nn.Sequential,
         transformer_decoder: TransformerDecoderProtocol,
         pose_action_tokenizer: PoseActionTokenizer,
-        add_residual_connection_to_prompt_visual_features: bool = False,
+        add_residual_connection_to_prompt_visual_features: bool = True,
         use_greedy_decoding: bool = False,
         disable_prompt_text: bool = False,
         disable_prompt_visual: bool = False,
@@ -186,6 +186,45 @@ class Policy(torch.nn.Module):
             )
         )
 
+    # def embed_multimodal_prompt(
+    #     self,
+    #     prompts: tuple[RawPromptTokenType, torch.Tensor, DataDict],
+    #     *,
+    #     text_mask: torch.Tensor | None = None,
+    # ) -> tuple[torch.Tensor, torch.Tensor]:
+    #     """Assembed, embed, and encode the prompt.
+
+    #     For the majority of cases, and always when training, the text mask will be None. We are
+    #     only providing the option for it so that we can do some perturbations on the prompts during
+    #     eval.
+    #     """
+    #     device = prompts[1].device
+    #     raw_prompts_token_type, word_batch, image_batch = prompts
+
+    #     # Do some optional disabling of modalities if need be
+    #     word_batch, text_mask = self._maybe_disable_words(word_batch, text_mask)
+    #     image_batch = self._maybe_disable_visuals(image_batch)
+
+    #     embedded_words = self._prompt_embedding(word_batch)
+    #     embedded_images = self._obj_encoder.forward_prompt_visual(image_batch)
+    #     embedded_images = self._prompt_obj_post_layer(embedded_images)
+
+    #     embedded_prompt, embedded_prompt_mask = assemble_multimodal_prompt(
+    #         embedded_text=embedded_words,
+    #         text_mask=text_mask,
+    #         embedded_visuals=embedded_images,
+    #         original_visuals=image_batch,
+    #         raw_prompts_token_type=raw_prompts_token_type,
+    #         embed_dim=self.embed_dim,
+    #         device=device,
+    #         is_using_patches=self._obj_encoder.is_patches,
+    #     )
+
+    #     if self._add_residual_connection_to_prompt_visual_features:
+    #         raise NotImplementedError("Not implemented this yet")
+
+    #     return embedded_prompt, embedded_prompt_mask
+
     def embed_multimodal_prompt(
         self,
         prompts: tuple[RawPromptTokenType, torch.Tensor, DataDict],
@@ -220,10 +259,13 @@ class Policy(torch.nn.Module):
             is_using_patches=self._obj_encoder.is_patches,
         )
 
-        if self._add_residual_connection_to_prompt_visual_features:
-            raise NotImplementedError("Not implemented this yet")
+        prompt_tokens = self.encode_prompt(
+            embedded_prompt=embedded_prompt,
+            embedded_prompt_mask=embedded_prompt_mask,
+            embedded_visuals=embedded_images,
+        )
 
-        return embedded_prompt, embedded_prompt_mask
+        return prompt_tokens, embedded_prompt_mask
 
     def encode_observation_token(
         self, observation: DataDict, *, shuffle_obj_per_observation: bool = False
@@ -267,19 +309,49 @@ class Policy(torch.nn.Module):
 
         return encoded_actions, encoded_actions_mask
 
-    def encode_prompt(
-        self,
-        embedded_prompt: torch.Tensor,
-        embedded_prompt_mask: torch.Tensor,
-    ) -> torch.Tensor:
-        """Encode the prompt."""
-        # Since we are using torch-style mask meaning, we need to invert the mask for the HF model
-        prompt_tokens = self._prompt_encoder(
-            inputs_embeds=embedded_prompt, attention_mask=~embedded_prompt_mask
-        ).last_hidden_state
-        prompt_tokens = self._prompt_encoder_post_layer(prompt_tokens)
+    # def encode_prompt(
+    #     self,
+    #     embedded_prompt: torch.Tensor,
+    #     embedded_prompt_mask: torch.Tensor,
+    # ) -> torch.Tensor:
+    #     """Encode the prompt."""
+    #     # Since we are using torch-style mask meaning, we need to invert the mask for the HF model
+    #     prompt_tokens = self._prompt_encoder(
+    #         inputs_embeds=embedded_prompt, attention_mask=~embedded_prompt_mask
+    #     ).last_hidden_state
+    #     prompt_tokens = self._prompt_encoder_post_layer(prompt_tokens)
 
-        return prompt_tokens
+    #     return prompt_tokens
+
+        def encode_prompt(
+            self,
+            embedded_prompt: torch.Tensor,
+            embedded_prompt_mask: torch.Tensor,
+            embedded_visuals: torch.Tensor | None = None,
+        ) -> torch.Tensor:
+            """Encode the prompt and apply residual connections if enabled."""
+            prompt_tokens = self._prompt_encoder(
+                inputs_embeds=embedded_prompt, attention_mask=~embedded_prompt_mask
+            ).last_hidden_state
+
+            if self._add_residual_connection_to_prompt_visual_features and embedded_visuals is not None:
+                if prompt_tokens.shape[1] == embedded_visuals.shape[1]:
+                    prompt_tokens += embedded_visuals
+                else:
+                    # Align the dimensions of embedded_visuals
+                    embedded_visuals = embedded_visuals.view(embedded_visuals.shape[0], -1, embedded_visuals.shape[-1])
+                    if embedded_visuals.shape[1] < prompt_tokens.shape[1]:
+                        padding = torch.zeros(
+                            (embedded_visuals.shape[0], prompt_tokens.shape[1] - embedded_visuals.shape[1], embedded_visuals.shape[2]),
+                            device=embedded_visuals.device,
+                        )
+                        embedded_visuals = torch.cat([embedded_visuals, padding], dim=1)
+                    elif embedded_visuals.shape[1] > prompt_tokens.shape[1]:
+                        embedded_visuals = embedded_visuals[:, :prompt_tokens.shape[1], :]
+                    prompt_tokens += embedded_visuals
+
+            prompt_tokens = self._prompt_encoder_post_layer(prompt_tokens)
+            return prompt_tokens
 
     def decode_action_logits(
         self, transformer_output: torch.Tensor, max_num_objects: int

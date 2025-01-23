@@ -10,7 +10,7 @@ program: src/cogelot/entrypoints/train.py
 
 name: decoder only
 entity: daiki-takahashi-
-project: CoGeLoT
+project: train
 
 method: grid
 
