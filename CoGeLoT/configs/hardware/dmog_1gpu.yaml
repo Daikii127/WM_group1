@@ -1,0 +1,17 @@
+# @package _global_
+
+defaults:
+  - gpu
+
+# DMOG using A40s.
+
+# As we need to maintain the batch size of 128, but on a single GPU, there's a bunch of tricks we
+# need to do to make this work.
+datamodule:
+  batch_size: 32
+  num_workers: 10
+
+trainer:
+  accumulate_grad_batches: 2
+  devices: 1
+  num_nodes: 1

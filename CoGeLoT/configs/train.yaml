@@ -1,0 +1,26 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - hydra: default
+  - datamodule: from_hf
+  - model: default
+  - learning_rate_scheduler@model.lr_scheduler_partial_fn: full
+  - trainer: default
+  - hardware: eidf_4gpu
+  - debug: null
+  - experiment: 01_their_vima
+
+task_name: "train"
+output_dir: ${hydra:runtime.output_dir}
+
+resume_from_checkpoint: null
+
+seed: 1000
+
+model:
+  optimizer_partial_fn:
+    _target_: torch.optim.AdamW
+    _partial_: true
+    lr: 1e-4
+    weight_decay: 0

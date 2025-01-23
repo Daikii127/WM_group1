@@ -1,0 +1,39 @@
+# Running command
+command:
+  - ${env}
+  - python
+  - ${program}
+  - "model.should_shuffle_obj_per_observations=true"
+  - ${args_no_hyphens}
+
+program: src/cogelot/entrypoints/evaluate.py
+
+name: Ablate with shuffled obj obs
+
+entity: daiki-takahashi-
+project: evaluation
+
+method: grid
+
+parameters:
+  model.model.wandb_run_id:
+    values:
+      # Trained on original
+      - 8lkml12g
+      # Trained on reworded
+      - 2df3mwfn
+
+  evaluation_instance_transform:
+    values:
+      - noop
+      # - textual
+      # - textual_gobbledygook_tokens
+      # - textual_gobbledygook_word
+      - reworded
+
+  evaluation_prompt_modality:
+    values:
+      - disable_none
+      # - disable_text
+      # - disable_visual
+      - disable_both

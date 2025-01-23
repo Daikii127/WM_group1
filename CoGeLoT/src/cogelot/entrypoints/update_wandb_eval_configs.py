@@ -1,0 +1,28 @@
+import wandb
+from loguru import logger
+from omegaconf import OmegaConf
+from tqdm import tqdm
+
+from cogelot.common.config import convert_to_dotlist, flatten_config
+from cogelot.common.config_metadata_patcher import build_eval_run_name, update_eval_config
+
+
+def update_wandb_eval_configs() -> None:
+    """Update the evaluation config for all runs in the project."""
+    runs = wandb.Api().runs("daiki-takahashi-/default_200M-evaluation")
+    for run in tqdm(runs):
+        omegaconf_config = OmegaConf.from_dotlist(convert_to_dotlist(run.config))
+
+        try:
+            new_config = update_eval_config(omegaconf_config)
+        except AttributeError:
+            logger.exception(f"Error updating config for run {run.id}")
+            continue
+
+        run.config.update(flatten_config(new_config))
+        run.name = build_eval_run_name(omegaconf_config)
+        run.update()
+
+
+if __name__ == "__main__":
+    update_wandb_eval_configs()

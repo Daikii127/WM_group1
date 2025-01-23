@@ -1,0 +1,5 @@
+# @package _global_
+
+defaults:
+  - evaluate
+  - override model@model.model: from_their_policy

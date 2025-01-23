@@ -1,0 +1,53 @@
+# docker-composeのバージョン指定
+version: '2.3'
+
+# コンテナ起動を楽にするための記述
+services:
+    $(whoami)_vima:
+        # build時の設定
+        build:
+
+            # Dockerfileがあるディレクトリのパス
+            context: .
+
+            # Dockerfileに渡す環境変数。コマンドの返り値をshファイルで文字列に変換して使用する
+            args:
+              user: $(whoami)
+              uid: $(id -u)
+              gid: $(id -g)
+
+        # image名
+        image: $(whoami)/vima
+
+        # コンテナ名
+        container_name: $(whoami)_vima
+
+        hostname: docker
+
+        # jupyter用にポートを開ける。衝突を防ぐため自分のuidの下4桁を使用する。
+        #ports:
+            #- $(($(id -u)%%10000+50000)):$(($(id -u)%%10000+50000))
+
+        devices:
+            - "/dev/dri:/dev/dri"
+
+        environment:
+            - DISPLAY=${DISPLAY}
+            - NVIDIA_VISIBLE_DEVICES=all
+            - NVIDIA_DRIVER_CAPABILITIES=all
+            - DRI_PRIME=1                 # 2つ目のGPUを使用
+            - LIBGL_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
+            - LIBGL_DEBUG=verbose         # Mesaのデバッグ情報を有効化
+            - MESA_GL_VERSION_OVERRIDE=3.3  # OpenGLバージョンを3.3に強制
+            - MESA_GLSL_VERSION_OVERRIDE=330
+        # マウント処理。:で分割し、左がホスト、右がdocker内
+        volumes:
+            - "/mnt/new_mensa/data/vima:/home/$(whoami)/vima_data"
+            - "~/workspace/WM_group1/VIMA:/home/$(whoami)/workspace/"
+            - "/tmp/.X11-unix:/tmp/.X11-unix"
+
+        # dockerコンテナを起動状態のままにしておくコマンド
+        tty: true
+
+
+

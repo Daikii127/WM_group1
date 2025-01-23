@@ -1,0 +1,9 @@
+_target_: cogelot.models.VIMALightningModule.from_hf_repo
+hf_repo_id: amitkparekh/cogelot
+wandb_run_id: ???
+epoch: -1
+
+# original_eval
+# _target_: cogelot.models.VIMALightningModule.from_hf_repo
+# wandb_run_id: ???
+# epoch: -1
